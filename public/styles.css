@@ -1,0 +1,44 @@
+/* styles.css */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .window {
+  
+    background-color: #fff;
+    border: 2px solid #000; /* Borde cuadrado de la ventana */
+    box-sizing: border-box;
+  }
+  
+  .title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    cursor: move; /* Permite arrastrar la ventana si `frame: false` */
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .close-button:hover {
+    color: #f00;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  

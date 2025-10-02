@@ -1,0 +1,237 @@
+/* Estilos mejorados para el componente de carga masiva */
+
+:root {
+    --color-primary: #2185d0;
+    --color-primary-rgb: 33, 133, 208;
+    --color-bg: #f4f7fb;
+    --color-border: #d9e2ec;
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --gradient-blue: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+}
+
+body,
+.app-root-bg {
+    background: var(--color-bg) !important;
+    font-family:
+        "Segoe UI",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.dz-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 1700px;
+    margin: 0 auto;
+    padding: 0.5rem 0 2.5rem;
+}
+
+.dz-panel {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.4rem 1.6rem;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition:
+        box-shadow 0.25s,
+        transform 0.25s;
+}
+.dz-panel:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.dz-panel:before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 85% 10%, rgba(var(--color-primary-rgb), 0.07), transparent 60%);
+}
+
+.dz-header-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.dz-header-inline h4 {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.dz-select-db .ui.selection.dropdown {
+    border-radius: var(--radius-sm);
+}
+
+.dz-dropzone {
+    border: 2px dashed var(--color-primary) !important;
+    background: #ffffff;
+    border-radius: 18px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+        background 0.25s,
+        border-color 0.25s;
+    position: relative;
+    min-height: 240px;
+    width: 100%;
+}
+.dz-dropzone:hover {
+    background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+.dz-hint {
+    color: #5a6b7b;
+    font-size: 0.95rem;
+    margin-top: 0.35rem;
+}
+
+.dz-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 1rem;
+}
+.dz-badge {
+    background: rgba(var(--color-primary-rgb), 0.08);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.15);
+    color: #175a86;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.4rem 0.65rem;
+    border-radius: 40px;
+    width: max-content;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    letter-spacing: 0.5px;
+}
+
+.dz-errors-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0 0;
+    max-height: 180px;
+    overflow: auto;
+    font-size: 0.75rem;
+}
+.dz-errors-list li {
+    margin-bottom: 0.25rem;
+}
+
+.dz-table-wrapper {
+    margin-top: 0.5rem;
+    position: relative;
+    background: #fff;
+    padding: 1.1rem 1.1rem 1.25rem;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    width: 100%;
+}
+
+.dz-table-wrapper h5 {
+    margin: 0 0 0.9rem;
+    font-weight: 600;
+    color: #1a4367;
+    letter-spacing: 0.5px;
+}
+
+.dz-table-scroll {
+    max-height: 60vh;
+    overflow: auto;
+    border-radius: var(--radius-sm);
+}
+
+.dz-table-scroll table {
+    font-size: 0.8rem;
+}
+.dz-table-scroll thead th {
+    position: sticky;
+    top: 0;
+    background: #f1f6fa;
+    z-index: 2;
+}
+
+.dz-actions {
+    margin-top: 1.2rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.dz-actions .ui.button.primary {
+    background: var(--gradient-blue);
+}
+.dz-actions .ui.button.primary:hover {
+    filter: brightness(0.95);
+}
+.dz-actions .ui.button.basic {
+    border: 1px solid var(--color-primary);
+}
+
+.dz-feedback {
+    max-width: 520px;
+    margin: 1.25rem auto 0;
+    border-radius: var(--radius-sm) !important;
+}
+
+.dz-instructivo-list {
+    padding-left: 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1.35rem;
+}
+.dz-instructivo-list li {
+    margin-bottom: 0.25rem;
+}
+
+.dz-chip-ok {
+    background: #e6f9ed;
+    color: #287d3c;
+    border: 1px solid #b6e2c3;
+}
+.dz-chip-warn {
+    background: #fff6e6;
+    color: #985f00;
+    border: 1px solid #f5d89a;
+}
+.dz-chip-error {
+    background: #fdecea;
+    color: #b7302b;
+    border: 1px solid #f4b4af;
+}
+
+/* Scrollbar sutil */
+.dz-table-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.dz-table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.dz-table-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 20px;
+}
+.dz-table-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.28);
+}
+
+/* Mensajes compactos */
+.ui.message {
+    border-radius: var(--radius-sm) !important;
+}
