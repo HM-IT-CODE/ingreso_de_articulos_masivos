@@ -73,8 +73,8 @@ const dbConfigs = {
 };
 function createWindow() {
   const win = new BrowserWindow({
-    width: 900,
-    height: 600,
+    width: 1200,
+    height: 800,
     resizable: true, // Desactiva el redimensionamiento
     maximizable: true, // Desactiva el maximizar
     // frame: false, // Desactiva el marco de la ventana
@@ -230,25 +230,518 @@ ipcMain.on("insertar-datos", async (event, datos) => {
     const pool = await sql.connect(sqlConfig);
     let respuesta = [];
 
-    // Cargar mapa de MODELOS (usar DESCRIPCION y/o MODELO en una sola pasada)
+    // RUTA SIMPLE VENEPAC (sin MODELOS, con mapeo MARCA si numérica) ------------------
+    const dbName = String(datos.database || "")
+      .trim()
+      .toLowerCase();
+    if (dbName === "venepac" || dbName === "prueba_venepac") {
+      writeLog(`Modo VENEPAC_SIMPLE activo base=${dbName}`);
+      transaction = new sql.Transaction(pool);
+      await transaction.begin();
+      // --- Metadata columnas relevantes (tipos + longitud) ---
+      let metaCols = {};
+      try {
+        const rsMeta = await pool
+          .request()
+          .query(
+            "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='ARTICULOS' AND COLUMN_NAME IN ('MARCA','GRUPO','SUBGRUPO','MODELO','DESCRIPCION','UNIDAD','USUARIO')"
+          );
+        rsMeta.recordset.forEach((r) => {
+          metaCols[r.COLUMN_NAME.toUpperCase()] = {
+            isNum: /int|numeric|decimal|bigint|smallint|tinyint/i.test(
+              r.DATA_TYPE
+            ),
+            max: r.CHARACTER_MAXIMUM_LENGTH,
+          };
+        });
+      } catch (e) {
+        writeLog(
+          "VENEPAC_SIMPLE Error leyendo metadata columnas: " + e.message
+        );
+      }
+      const marcaEsNum = !!(metaCols.MARCA && metaCols.MARCA.isNum);
+      const grupoEsNum = !!(metaCols.GRUPO && metaCols.GRUPO.isNum);
+      const subgrupoEsNum = !!(metaCols.SUBGRUPO && metaCols.SUBGRUPO.isNum);
+      const modeloEsNum = !!(metaCols.MODELO && metaCols.MODELO.isNum);
+      if (metaCols.DESCRIPCION) {
+        writeLog(
+          `VENEPAC_SIMPLE Meta DESCRIPCION tipoNum=${metaCols.DESCRIPCION.isNum} maxLen=${metaCols.DESCRIPCION.max}`
+        );
+      } else {
+        writeLog(
+          "VENEPAC_SIMPLE Meta DESCRIPCION no encontrada en INFORMATION_SCHEMA"
+        );
+      }
+      writeLog(
+        `VENEPAC_SIMPLE Tipos -> MARCA_NUM=${marcaEsNum} GRUPO_NUM=${grupoEsNum} SUBGRUPO_NUM=${subgrupoEsNum} MODELO_NUM=${modeloEsNum}`
+      );
+      const trunc = (colName, val) => {
+        if (val == null) return val;
+        const mc = metaCols[colName];
+        if (!mc || mc.max == null || typeof val !== "string") return val;
+        // mc.max = -1 indica VARCHAR(MAX) en SQL Server => no truncar
+        if (mc.max === -1) return val;
+        if (val.length > mc.max) return val.substring(0, mc.max);
+        return val;
+      };
+      // --- Cargar catálogos (M,G,S) si columnas numéricas ---
+      const loadCatalogo = async (tipo) => {
+        try {
+          const rs = await pool
+            .request()
+            .query(
+              `SELECT CODIGO, DESCRIPCION FROM CODIGOS WHERE TIPO='${tipo}'`
+            );
+          const map = {};
+          rs.recordset.forEach((r) => {
+            if (r.DESCRIPCION && r.CODIGO != null) {
+              map[String(r.DESCRIPCION).trim().toUpperCase()] = r.CODIGO;
+            }
+          });
+          return map;
+        } catch (e) {
+          writeLog(
+            `VENEPAC_SIMPLE Error cargando catalogo tipo=${tipo}: ${e.message}`
+          );
+          return {};
+        }
+      };
+      let mapaMarcas = marcaEsNum ? await loadCatalogo("M") : {};
+      let mapaGrupos = grupoEsNum ? await loadCatalogo("G") : {};
+      let mapaSubgrupos = subgrupoEsNum ? await loadCatalogo("S") : {};
+      writeLog(
+        `VENEPAC_SIMPLE Catalogos -> marcas=${
+          Object.keys(mapaMarcas).length
+        } grupos=${Object.keys(mapaGrupos).length} subgrupos=${
+          Object.keys(mapaSubgrupos).length
+        }`
+      );
+      // Pre-cargar artículos existentes para evitar duplicados
+      const codigosLote = [
+        ...new Set(
+          datos.data.map((d) => String(d.CODIGO || "").trim()).filter(Boolean)
+        ),
+      ];
+      let existentes = new Set();
+      if (codigosLote.length) {
+        try {
+          const listaIn = codigosLote
+            .map((c) => `'${c.replace(/'/g, "''")}'`)
+            .join(",");
+          const rsExist = await pool
+            .request()
+            .query(
+              `SELECT ARTICULO FROM ARTICULOS WHERE ARTICULO IN (${listaIn})`
+            );
+          rsExist.recordset.forEach((r) =>
+            existentes.add(String(r.ARTICULO).trim())
+          );
+          writeLog(
+            `VENEPAC_SIMPLE Duplicados preexistentes=${existentes.size}`
+          );
+        } catch (eDup) {
+          writeLog("VENEPAC_SIMPLE Error precarga duplicados: " + eDup.message);
+        }
+      }
+      const insertadosEnLote = new Set();
+      for (const dato of datos.data) {
+        const codigoArticulo = String(dato.CODIGO || "").trim();
+        // Defaults solicitados: MARCA=GENERAL, GRUPO=MUESTRA, SUBGRUPO=ACCESORIES
+        const rawMarca = String(dato.MARCA || "GENERAL").trim();
+        const rawGrupo = String(dato.GRUPO || "MUESTRA").trim();
+        const rawSubgrupo = String(dato.SUBGRUPO || "ACCESORIES").trim();
+        const rawModelo = String(dato.MODELO || "").trim();
+        if (!codigoArticulo || !rawMarca || !rawGrupo) {
+          respuesta.push({
+            codigo: codigoArticulo || dato.CODIGO,
+            status: "Fallido",
+            mensaje: "ARTICULO, MARCA o GRUPO vacío",
+          });
+          continue;
+        }
+        if (existentes.has(codigoArticulo)) {
+          respuesta.push({
+            codigo: codigoArticulo,
+            status: "Duplicado",
+            mensaje: "Ya existe en BD",
+          });
+          writeLog(`VENEPAC_SIMPLE Duplicado BD ${codigoArticulo}`);
+          continue;
+        }
+        if (insertadosEnLote.has(codigoArticulo)) {
+          respuesta.push({
+            codigo: codigoArticulo,
+            status: "Duplicado",
+            mensaje: "Repetido en archivo",
+          });
+          writeLog(`VENEPAC_SIMPLE Duplicado archivo ${codigoArticulo}`);
+          continue;
+        }
+        // Resolver / mapear MARCA
+        let marcaValor = rawMarca;
+        if (marcaEsNum) {
+          if (/^\d+$/.test(rawMarca)) {
+            marcaValor = parseInt(rawMarca, 10);
+          } else {
+            const key = rawMarca.toUpperCase();
+            if (mapaMarcas[key] != null) {
+              marcaValor = parseInt(mapaMarcas[key], 10);
+            } else {
+              try {
+                const rsMax = await pool
+                  .request()
+                  .query(
+                    "SELECT MAX(CAST(CODIGO AS INT)) AS MAXCOD FROM CODIGOS WHERE TIPO='M' AND ISNUMERIC(CODIGO)=1"
+                  );
+                const nextCod =
+                  rsMax.recordset[0] && rsMax.recordset[0].MAXCOD
+                    ? parseInt(rsMax.recordset[0].MAXCOD, 10) + 1
+                    : 1;
+                const nuevoReq = transaction.request();
+                nuevoReq.input("CODIGO", sql.VarChar, String(nextCod));
+                nuevoReq.input("DESCRIPCION", sql.VarChar, rawMarca);
+                nuevoReq.input("TIPO", sql.VarChar, "M");
+                await nuevoReq.query(
+                  "INSERT INTO CODIGOS (CODIGO, DESCRIPCION, TIPO) VALUES (@CODIGO, @DESCRIPCION, @TIPO)"
+                );
+                mapaMarcas[key] = nextCod;
+                marcaValor = nextCod <= 0 ? 1 : nextCod;
+                writeLog(
+                  `VENEPAC_SIMPLE Marca creada CODIGO=${marcaValor} DESCRIPCION='${rawMarca}'`
+                );
+              } catch (eNewMarca) {
+                respuesta.push({
+                  codigo: codigoArticulo,
+                  status: "Fallido",
+                  mensaje: "No se pudo crear MARCA: " + eNewMarca.message,
+                });
+                writeLog(
+                  `VENEPAC_SIMPLE Error creando marca '${rawMarca}' articulo=${codigoArticulo} msg=${eNewMarca.message}`
+                );
+                continue;
+              }
+            }
+          }
+        }
+        // Resolver / mapear GRUPO
+        let grupoValor = rawGrupo;
+        if (grupoEsNum) {
+          if (/^\d+$/.test(rawGrupo)) grupoValor = parseInt(rawGrupo, 10);
+          else {
+            const gKey = rawGrupo.toUpperCase();
+            if (mapaGrupos[gKey] != null)
+              grupoValor = parseInt(mapaGrupos[gKey], 10);
+            else {
+              respuesta.push({
+                codigo: codigoArticulo,
+                status: "Fallido",
+                mensaje: `GRUPO '${rawGrupo}' no mapeado`,
+              });
+              writeLog(
+                `VENEPAC_SIMPLE Grupo no mapeado articulo=${codigoArticulo} valor='${rawGrupo}'`
+              );
+              continue;
+            }
+          }
+        }
+        // Resolver / mapear SUBGRUPO (opcional) con creación automática
+        let subgrupoValor = rawSubgrupo || null;
+        if (subgrupoValor && subgrupoEsNum) {
+          if (/^\d+$/.test(subgrupoValor)) {
+            subgrupoValor = parseInt(subgrupoValor, 10);
+          } else {
+            const sKey = subgrupoValor.toUpperCase();
+            if (mapaSubgrupos[sKey] != null) {
+              subgrupoValor = parseInt(mapaSubgrupos[sKey], 10);
+            } else {
+              try {
+                const rsMaxS = await pool
+                  .request()
+                  .query(
+                    "SELECT MAX(CAST(CODIGO AS INT)) AS MAXCOD FROM CODIGOS WHERE TIPO='S' AND ISNUMERIC(CODIGO)=1"
+                  );
+                const nextCodS =
+                  rsMaxS.recordset[0] && rsMaxS.recordset[0].MAXCOD
+                    ? parseInt(rsMaxS.recordset[0].MAXCOD, 10) + 1
+                    : 1;
+                const reqS = transaction.request();
+                reqS.input("CODIGO", sql.VarChar, String(nextCodS));
+                reqS.input("DESCRIPCION", sql.VarChar, subgrupoValor);
+                reqS.input("TIPO", sql.VarChar, "S");
+                await reqS.query(
+                  "INSERT INTO CODIGOS (CODIGO, DESCRIPCION, TIPO) VALUES (@CODIGO, @DESCRIPCION, @TIPO)"
+                );
+                mapaSubgrupos[sKey] = nextCodS;
+                subgrupoValor = nextCodS;
+                writeLog(
+                  `VENEPAC_SIMPLE Subgrupo creado CODIGO=${nextCodS} DESCRIPCION='${subgrupoValor}'`
+                );
+              } catch (eNewS) {
+                writeLog(
+                  `VENEPAC_SIMPLE Error creando subgrupo '${subgrupoValor}' articulo=${codigoArticulo} msg=${eNewS.message}`
+                );
+                subgrupoValor = null;
+              }
+            }
+          }
+        }
+        // MODELO (solo guardar si existe columna). No hay catálogo, se almacena como viene (o numérico si la columna es numérica y el valor lo es)
+        let modeloValor = rawModelo || null;
+        if (modeloValor && modeloEsNum) {
+          if (/^\d+$/.test(modeloValor))
+            modeloValor = parseInt(modeloValor, 10);
+          else {
+            // Si columna es numérica y el valor no es número => error
+            respuesta.push({
+              codigo: codigoArticulo,
+              status: "Fallido",
+              mensaje: "MODELO debe ser numérico",
+            });
+            continue;
+          }
+        }
+        // Truncar campos de texto susceptibles + fallback descripción (solo si realmente viene vacía)
+        const rawDescOriginal = dato.DESCRIPCION;
+        const rawDesc = ((dato.DESCRIPCION ?? "") + "").trim();
+        let descFinal = trunc("DESCRIPCION", rawDesc);
+        if (rawDesc && !descFinal) {
+          // Evitar caso anómalo donde trunc retorna vacío indebidamente
+          descFinal = rawDesc;
+        }
+        let usoFallback = false;
+        if (rawDesc.length === 0) {
+          const modelCandidate = (rawModelo || "").trim();
+          descFinal = trunc(
+            "DESCRIPCION",
+            modelCandidate.length ? modelCandidate : codigoArticulo
+          );
+          usoFallback = true;
+        }
+        writeLog(
+          `VENEPAC_SIMPLE Desc articulo=${codigoArticulo} raw='${rawDescOriginal}' trim='${rawDesc}' final='${descFinal}' fallback=${usoFallback}`
+        );
+        const unidadFinal = trunc("UNIDAD", dato.UNIDAD || "UND");
+        const usuarioFinal = trunc("USUARIO", dato.USUARIO || "");
+        if (typeof marcaValor === "string")
+          marcaValor = trunc("MARCA", marcaValor);
+        if (typeof grupoValor === "string")
+          grupoValor = trunc("GRUPO", grupoValor);
+        if (typeof subgrupoValor === "string")
+          subgrupoValor = trunc("SUBGRUPO", subgrupoValor);
+        if (typeof modeloValor === "string")
+          modeloValor = trunc("MODELO", modeloValor);
+        // FECHACIF
+        let fechaCif = new Date();
+        if (dato.FECHACIF) {
+          const rawF = String(dato.FECHACIF).trim();
+          const mF = rawF.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+          if (mF) {
+            const d = parseInt(mF[1], 10),
+              mo = parseInt(mF[2], 10) - 1,
+              y = parseInt(mF[3].length === 2 ? "20" + mF[3] : mF[3], 10);
+            fechaCif = new Date(y, mo, d);
+          } else {
+            const t = Date.parse(rawF);
+            if (!isNaN(t)) fechaCif = new Date(t);
+          }
+        }
+        const IVA = isFinite(Number(String(dato.IVA).replace(",", ".")))
+          ? Number(String(dato.IVA).replace(",", "."))
+          : 16.0;
+        const GARANTIA = isFinite(
+          Number(String(dato.GARANTIA).replace(",", "."))
+        )
+          ? Number(String(dato.GARANTIA).replace(",", "."))
+          : 0.0;
+        try {
+          const columnasInsert = [
+            "ARTICULO",
+            "DESCRIPCION",
+            "MARCA",
+            "UNIDAD",
+            "REPOSICION",
+            "IVA",
+            "FECHACIF",
+            "CIF",
+            "TIPO",
+            "GARANTIA",
+            "DESCUENTO",
+            "FECHA",
+            "FECHAACTUAL",
+            "GRUPO",
+            "VENTA",
+          ];
+          if ("USUARIO" in dato) columnasInsert.push("USUARIO");
+          if (metaCols.SUBGRUPO) columnasInsert.push("SUBGRUPO");
+          // MODELO si existe metadata
+          if (metaCols.MODELO) columnasInsert.push("MODELO");
+          const valores = columnasInsert.map((c) => {
+            if (c === "FECHA" || c === "FECHAACTUAL") return "GETDATE()";
+            if (c === "FECHACIF") return "@FECHACIF";
+            return "@" + c;
+          });
+          const qArt = `INSERT INTO ARTICULOS (${columnasInsert.join(
+            ", "
+          )}) VALUES (${valores.join(", ")})`;
+          writeLog(
+            `VENEPAC_SIMPLE PreInsert articulo=${codigoArticulo} descFinal='${descFinal}' len=${
+              (descFinal || "").length
+            }`
+          );
+          const rA = transaction.request();
+          rA.input("ARTICULO", sql.VarChar, codigoArticulo);
+          rA.input("DESCRIPCION", sql.VarChar, descFinal);
+          if (typeof marcaValor === "number")
+            rA.input("MARCA", sql.Int, marcaValor);
+          else rA.input("MARCA", sql.VarChar, marcaValor);
+          rA.input("UNIDAD", sql.VarChar, unidadFinal);
+          // Parámetros numéricos constantes
+          rA.input("REPOSICION", sql.Decimal(18, 2), 0.0);
+          rA.input("IVA", sql.Decimal(18, 2), IVA);
+          rA.input("FECHACIF", sql.DateTime, fechaCif);
+          rA.input(
+            "CIF",
+            sql.Decimal(18, 2),
+            isFinite(Number(dato.CIF)) ? Number(dato.CIF) : 0.0
+          );
+          rA.input("TIPO", sql.VarChar, dato.TIPO || "A");
+          rA.input("GARANTIA", sql.Decimal(18, 2), GARANTIA);
+          rA.input("DESCUENTO", sql.Decimal(18, 2), 0.0);
+          if (typeof grupoValor === "number")
+            rA.input("GRUPO", sql.Int, grupoValor);
+          else rA.input("GRUPO", sql.VarChar, grupoValor);
+          rA.input("VENTA", sql.Decimal(18, 2), 0.0);
+          if ("USUARIO" in dato) rA.input("USUARIO", sql.VarChar, usuarioFinal);
+          if (metaCols.SUBGRUPO) {
+            if (subgrupoValor == null) rA.input("SUBGRUPO", sql.VarChar, null);
+            else if (typeof subgrupoValor === "number")
+              rA.input("SUBGRUPO", sql.Int, subgrupoValor);
+            else rA.input("SUBGRUPO", sql.VarChar, subgrupoValor);
+          }
+          if (metaCols.MODELO) {
+            if (modeloValor == null) rA.input("MODELO", sql.VarChar, null);
+            else if (typeof modeloValor === "number")
+              rA.input("MODELO", sql.Int, modeloValor);
+            else rA.input("MODELO", sql.VarChar, modeloValor);
+          }
+          await rA.query(qArt);
+          // Verificar inmediatamente lo insertado (diagnóstico)
+          try {
+            const rsCheck = await transaction
+              .request()
+              .input("ARTICULO", sql.VarChar, codigoArticulo)
+              .query(
+                "SELECT DESCRIPCION FROM ARTICULOS WHERE ARTICULO=@ARTICULO"
+              );
+            const dbDesc = rsCheck.recordset[0]
+              ? (rsCheck.recordset[0].DESCRIPCION || "").trim()
+              : "";
+            if (!dbDesc && descFinal) {
+              writeLog(
+                `VENEPAC_SIMPLE PostInsert DESCRIPCION vacia en BD, aplicando UPDATE articulo=${codigoArticulo} valor='${descFinal}'`
+              );
+              await transaction
+                .request()
+                .input("DESCRIPCION", sql.VarChar, descFinal)
+                .input("ARTICULO", sql.VarChar, codigoArticulo)
+                .query(
+                  "UPDATE ARTICULOS SET DESCRIPCION=@DESCRIPCION WHERE ARTICULO=@ARTICULO"
+                );
+              // Segunda lectura tras update
+              try {
+                const rsCheck2 = await transaction
+                  .request()
+                  .input("ARTICULO", sql.VarChar, codigoArticulo)
+                  .query(
+                    "SELECT DESCRIPCION FROM ARTICULOS WHERE ARTICULO=@ARTICULO"
+                  );
+                const dbDesc2 = rsCheck2.recordset[0]
+                  ? (rsCheck2.recordset[0].DESCRIPCION || "").trim()
+                  : "";
+                writeLog(
+                  `VENEPAC_SIMPLE PostUpdate DESCRIPCION='${dbDesc2}' articulo=${codigoArticulo}`
+                );
+              } catch (e2) {
+                writeLog(
+                  `VENEPAC_SIMPLE Error segunda verificacion descripcion articulo=${codigoArticulo} msg=${e2.message}`
+                );
+              }
+            } else {
+              writeLog(
+                `VENEPAC_SIMPLE PostInsert DESCRIPCION='${dbDesc}' articulo=${codigoArticulo}`
+              );
+            }
+          } catch (eChk) {
+            writeLog(
+              `VENEPAC_SIMPLE Error verificacion descripcion articulo=${codigoArticulo} msg=${eChk.message}`
+            );
+          }
+          // Insertar ficha: usar SOLO la descripción (o fallback si venía vacía) sin concatenar MODELO
+          try {
+            const fichaTxt = descFinal; // ya contiene fallback si DESCRIPCION venía vacía
+            await transaction
+              .request()
+              .input("ARTICULO", sql.VarChar, codigoArticulo)
+              .input("CARACTERISTICAS", sql.VarChar, fichaTxt)
+              .query(
+                "INSERT INTO ARTICULOSFICHAS (ARTICULO, FOTO, CARACTERISTICAS) VALUES (@ARTICULO, NULL, @CARACTERISTICAS)"
+              );
+          } catch (eFicha) {
+            writeLog(
+              `VENEPAC_SIMPLE Advertencia ficha no insertada articulo=${codigoArticulo} msg=${eFicha.message}`
+            );
+          }
+          await transaction
+            .request()
+            .input("ARTICULO", sql.VarChar, codigoArticulo)
+            .query(
+              "INSERT INTO KARDEX (FECHA, ARTICULO, SALDO, CANT_ENT, CANT_IN, CANT_FACT, CANT_OUT, CANT_ENS) VALUES (GETDATE(), @ARTICULO,0,0,0,0,0,0)"
+            );
+          insertadosEnLote.add(codigoArticulo);
+          respuesta.push({ codigo: codigoArticulo, status: "Insertado" });
+          writeLog(`VENEPAC_SIMPLE Insertado articulo=${codigoArticulo}`);
+        } catch (eIns) {
+          writeLog(
+            `VENEPAC_SIMPLE Error articulo=${codigoArticulo} msg=${eIns.message}`
+          );
+          respuesta.push({
+            codigo: codigoArticulo,
+            status: "Fallido",
+            mensaje: eIns.message,
+          });
+        }
+      }
+      await transaction.commit();
+      writeLog("VENEPAC_SIMPLE Commit OK");
+      event.reply("insertar-datos-respuesta", respuesta);
+      writeLog("Cerrando conexión SQL");
+      sql.close();
+      return; // NO continuar a ruta avanzada
+    }
+
+    // Cargar mapa de MODELOS sólo para bases dfsk (venepac no tiene tabla MODELOS)
     let modelosMap = {}; // KEY (texto upper) -> IDMODELO
-    try {
-      const rs = await pool
-        .request()
-        .query("SELECT IDMODELO, DESCRIPCION, MODELO FROM MODELOS");
-      rs.recordset.forEach((r) => {
-        if (r.DESCRIPCION) {
-          const k1 = String(r.DESCRIPCION).trim().toUpperCase();
-          if (k1) modelosMap[k1] = r.IDMODELO;
-        }
-        if (r.MODELO) {
-          const k2 = String(r.MODELO).trim().toUpperCase();
-          if (k2) modelosMap[k2] = r.IDMODELO;
-        }
-      });
-      writeLog("Modelos cargados (claves)=" + Object.keys(modelosMap).length);
-    } catch (e) {
-      writeLog("Error cargando modelos: " + e.message);
+    if (!["venepac", "prueba_venepac"].includes(datos.database)) {
+      try {
+        const rs = await pool
+          .request()
+          .query("SELECT IDMODELO, DESCRIPCION, MODELO FROM MODELOS");
+        rs.recordset.forEach((r) => {
+          if (r.DESCRIPCION) {
+            const k1 = String(r.DESCRIPCION).trim().toUpperCase();
+            if (k1) modelosMap[k1] = r.IDMODELO;
+          }
+          if (r.MODELO) {
+            const k2 = String(r.MODELO).trim().toUpperCase();
+            if (k2) modelosMap[k2] = r.IDMODELO;
+          }
+        });
+        writeLog("Modelos cargados (claves)=" + Object.keys(modelosMap).length);
+      } catch (e) {
+        writeLog("Error cargando modelos: " + e.message);
+      }
+    } else {
+      writeLog("Base venepac: se omite carga de MODELOS");
     }
 
     // Obtener metadata de columnas clave de ARTICULOS (una sola vez) para diagnosticar tipos y saber si existe USUARIO/FECHACIF
@@ -685,261 +1178,3 @@ ipcMain.on("insertar-datos", async (event, datos) => {
     sql.close();
   }
 });
-
-/* TODO I-BUENO 
-ipcMain.on("insertar-datos", async (event, datos) => {
-  if (
-    !datos ||
-    !Array.isArray(datos.data) ||
-    datos.data.length === 0 ||
-    !datos.database
-  ) {
-    event.reply("insertar-datos-respuesta", "No se recibieron datos válidos.");
-    return;
-  }
-
-  const sqlConfig = dbConfigs[datos.database];
-
-  if (!sqlConfig) {
-    event.reply(
-      "insertar-datos-respuesta",
-      "Base de datos no válida seleccionada."
-    );
-    return;
-  }
-
-  try {
-    const pool = await sql.connect(sqlConfig);
-    let respuesta = [];
-          // Mapa para conocer si las columnas MARCA / GRUPO son numéricas realmente
-          var colEsNum = {};
-          meta.recordset.forEach((r) => {
-            colEsNum[r.COLUMN_NAME.toUpperCase()] = /int|numeric|decimal/i.test(
-              r.DATA_TYPE
-            );
-          });
-          // Guardar referencia en variable local para uso en el loop
-          var columnaMarcaEsNumerica = !!colEsNum["MARCA"];
-          var columnaGrupoEsNumerica = !!colEsNum["GRUPO"];
-          // Adjuntar a pool para depuración (no esencial)
-          pool._columnaMarcaEsNumerica = columnaMarcaEsNumerica;
-          pool._columnaGrupoEsNumerica = columnaGrupoEsNumerica;
-    //! creo una trasaccion asincrona
-    const transaction = new sql.Transaction(pool);
-    await transaction.begin();
-
-    // Proceso de inserción de datos
-    for (const dato of datos.data) {
-      const codigoArticulo = String(dato.CODIGO).trim();
-      const articuloMarca = String(dato.MARCA).trim();
-      const articuloGrupo = String(dato.GRUPO).trim();
-      // Convertir a string y quitar espacios
-
-      if (codigoArticulo === "") {
-        console.error(`Valor inválido para ARTICULO: ${dato.CODIGO}`);
-        respuesta.push({
-          codigo: dato.CODIGO,
-          status: "Fallido",
-          mensaje: "ARTICULO inválido",
-        });
-        continue; // Salta a la siguiente iteración
-      }
-
-      if (articuloMarca === "") {
-        console.error(`Valor inválido para ARTICULO: ${dato.MARCA}`);
-        respuesta.push({
-          codigo: dato.MARCA,
-          status: "Fallido",
-          mensaje: "MARCA inválido",
-        });
-        continue; // Salta a la siguiente iteración
-      }
-
-      if (articuloGrupo === "") {
-        console.error(`Valor inválido para ARTICULO: ${dato.GRUPO}`);
-        respuesta.push({
-          codigo: dato.GRUPO,
-          status: "Fallido",
-          mensaje: "GRUPO inválido",
-        });
-        continue; // Salta a la siguiente iteración
-      }
-
-      try {
-        const queryArticulos = `
-          INSERT INTO ARTICULOS
-          (ARTICULO, DESCRIPCION, MARCA, UNIDAD, REPOSICION, IVA, FECHACIF, CIF, TIPO, GARANTIA, DESCUENTO, FECHA, FECHAACTUAL, GRUPO, VENTA)
-          VALUES (@ARTICULO, @DESCRIPCION, @MARCA, @UNIDAD, @REPOSICION, @IVA, GETDATE(), @CIF, @TIPO, @GARANTIA, @DESCUENTO, GETDATE(), GETDATE(), @GRUPO, @VENTA)
-        `;
-
-        await transaction
-          .request()
-          .input("ARTICULO", sql.VarChar, codigoArticulo)
-          .input("DESCRIPCION", sql.VarChar, dato.DESCRIPCION)
-          .input("MARCA", sql.VarChar, articuloMarca)
-          .input("UNIDAD", sql.VarChar, dato.UNIDAD)
-          .input("REPOSICION", sql.Decimal, 0.0)
-          .input("IVA", sql.Decimal, 16.0)
-          .input("CIF", sql.Decimal, dato.CIF || 0)
-          .input("TIPO", sql.VarChar, dato.TIPO || "A")
-          .input("GARANTIA", sql.Decimal, dato.GARANTIA || 0)
-          .input("DESCUENTO", sql.Decimal, 0.0)
-          .input("GRUPO", sql.VarChar, articuloGrupo)
-          .input("VENTA", sql.Decimal, 0.0)
-          .query(queryArticulos);
-
-        // Insertar en KARDEX
-        const queryKardex = `
-      INSERT INTO KARDEX
-      (FECHA, ARTICULO, SALDO, CANT_ENT, CANT_IN, CANT_FACT, CANT_OUT, CANT_ENS)
-      VALUES (GETDATE(), @ARTICULO, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00)
-    `;
-        await transaction
-          .request()
-          .input("ARTICULO", sql.VarChar, dato.CODIGO)
-          .query(queryKardex);
-
-        // Insertar en ARTICULOSFICHAS
-        const queryArticulosFichas = `
-   INSERT INTO ARTICULOSFICHAS
-   (ARTICULO, FOTO, CARACTERISTICAS)
-   VALUES (@ARTICULO, NULL, @CARACTERISTICAS)
- `;
-
-        await transaction
-          .request()
-          .input("ARTICULO", sql.VarChar, dato.CODIGO)
-          .input("CARACTERISTICAS", sql.VarChar, dato.CARACTERISTICAS || "N/A")
-          .query(queryArticulosFichas);
-
-        respuesta.push({ codigo: dato.CODIGO, status: "Insertado" });
-      } catch (err) {
-        console.error(`Error al insertar ARTICULO: ${dato.CODIGO}`, err);
-        respuesta.push({
-          codigo: dato.CODIGO,
-          status: "Fallido",
-          mensaje: err.message,
-        });
-      }
-    }
-
-    //TODO Confirma la transacción si todo ha ido bien
-    await transaction.commit();
-
-    event.reply("insertar-datos-respuesta", respuesta);
-  } catch (err) {
-    console.error("Error al insertar datos:", err);
-    // Deshace la transacción en caso de error
-    if (transaction) {
-      await transaction.rollback();
-    } // Captura más detalles del error
-    event.reply(
-      "insertar-datos-respuesta",
-      `Error al insertar datos en la base de datos: ${err.message}`
-    );
-  } finally {
-    sql.close(); // Cerrar la conexión a la base de datos
-  }
-});
-*/
-
-/* const { app, BrowserWindow, ipcMain } = require("electron");
-const path = require("path");
-const isDev = require("electron-is-dev");
-require("@electron/remote/main").initialize();
-const sql = require("mssql");
-
-// Configuración de la conexión a SQL Server
-const sqlConfig = {
-  user: "sa",
-  password: "Rsistems86",
-  database: "almacen",
-  server: "localhost", // o el nombre de tu servidor
-  options: {
-    encrypt: false, // No usar SSL
-    trustServerCertificate: true, // Opción recomendada para entornos de desarrollo
-  },
-};
-
-// Función para crear la ventana principal de la aplicación
-function createWindow() {
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
-  });
-
-  win.loadURL(
-    isDev
-      ? "http://localhost:3000"
-      : `file://${path.join(__dirname, "../build/index.html")}`
-  );
-}
-
-app.whenReady().then(() => {
-  createWindow();
-
-  // Establecer la conexión con SQL Server
-  sql.connect(sqlConfig).catch((err) => {
-    console.error("Error al conectar a SQL Server:", err.message);
-  });
-});
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
-
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
-
-// Manejador para el mensaje 'insertar-datos'
-ipcMain.on("insertar-datos", async (event, datosExcel) => {
-  if (!datosExcel || datosExcel.length === 0) {
-    event.reply("insertar-datos-respuesta", "No se recibieron datos válidos.");
-    return;
-  }
-
-  try {
-    const pool = await sql.connect(sqlConfig);
-    let respuesta = [];
-
-    for (let i = 0; i < datosExcel.length; i++) {
-      const dato = datosExcel[i];
-      const query = `
-        INSERT INTO ARTICULOS
-        (ARTICULO, DESCRIPCION, MARCA, UNIDAD, REPOSICION, IVA, FECHACIF, CIF, TIPO, GARANTIA, DESCUENTO, FECHA, FECHAACTUAL, GRUPO, VENTA)
-        VALUES (@ARTICULO, @DESCRIPCION, @MARCA, @UNIDAD, @REPOSICION, @IVA, GETDATE(), @CIF, @TIPO, @GARANTIA, @DESCUENTO, GETDATE(), GETDATE(), @GRUPO, @VENTA)
-      `;
-
-      await pool
-        .request()
-        .input("ARTICULO", sql.VarChar, dato.CODIGO)
-        .input("DESCRIPCION", sql.VarChar, dato.DESCRIPCION)
-        .input("MARCA", sql.VarChar, dato.MARCA)
-        .input("UNIDAD", sql.VarChar, dato.UNIDAD)
-        .input("REPOSICION", sql.Decimal, 0.0)
-        .input("IVA", sql.Decimal, 16.0)
-        .input("CIF", sql.Decimal, dato.CIF || 0)
-        .input("TIPO", sql.VarChar, dato.TIPO || "A")
-        .input("GARANTIA", sql.Decimal, dato.GARANTIA || 0)
-        .input("DESCUENTO", sql.Decimal, 0.0)
-        .input("GRUPO", sql.VarChar, dato.GRUPO)
-        .input("VENTA", sql.Decimal, 0.0)
-        .query(query);
-
-      respuesta.push({ codigo: dato.CODIGO, status: "Insertado" });
-    }
-
-    event.reply("insertar-datos-respuesta", respuesta);
-  } catch (error) {
-    event.reply("insertar-datos-respuesta", `Error: ${error.message}`);
-  }
-});
- */

@@ -48,7 +48,9 @@ const Dropzone = () => {
 
   const instructivo = isVenepacBase
     ? [
-        "Plantilla VENEPAC: CODIGO, DESCRIPCION, MARCA, UNIDAD, GRUPO, MODELO, IVA(opc), GARANTIA(opc), USUARIO",
+        "Plantilla VENEPAC: CODIGO, DESCRIPCION(opc), MODELO(opc), MARCA(opc), UNIDAD, GRUPO(opc), SUBGRUPO(opc), FECHACIF(opc), IVA(opc), GARANTIA(opc), USUARIO(opc)",
+        "Si DESCRIPCION se deja vacía se usará MODELO y si también falta MODELO se usará el CODIGO como descripción/ficha",
+        "Defaults: MARCA=GENERAL, GRUPO=MUESTRA, SUBGRUPO=ACCESORIES si se dejan vacíos",
         "Seleccionar base venepac y probar conexión",
         "Cargar Excel y revisar errores mínimos",
         "Guardar",
@@ -223,37 +225,55 @@ const Dropzone = () => {
     reader.onload = (e) => {
       const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      const json = XLSX.utils.sheet_to_json(sheet);
+      // Leer headers crudos para auto-detección
+      const rawRows = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: "",
+      });
+      const headers = (rawRows[0] || []).map((h) => String(h || "").trim());
+      console.log("Headers detectados:", headers);
+      // Auto-detección DFSK si aparecen columnas típicas
+      const dfsKIndicadores = [
+        "CARACTERISTICAS",
+        "NUMEROPARTE",
+        "APLICA",
+        "GRUPO A",
+        "CATEGORIA",
+      ]; // mayúsculas
+      const hasDfskSignature = headers.some((h) =>
+        dfsKIndicadores.includes(h.toUpperCase())
+      );
+      const forzarDfsk = !isDFSK && hasDfskSignature; // Usuario no seleccionó base dfsk pero plantilla lo parece
+      if (forzarDfsk) {
+        console.warn(
+          "Auto-detección: plantilla coincide con DFSK aunque no se seleccionó base DFSK."
+        );
+      }
+      // Convertir a objetos manteniendo celdas vacías
+      const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
       const errs = [];
       const parsed = json.map((row, index) => {
-        if (isVenepacBase) {
+        const usarDfsk = (isDFSK || forzarDfsk) && !isVenepacBase;
+        if (!usarDfsk && isVenepacBase) {
           const base = {
             CODIGO: row.CODIGO,
             DESCRIPCION: row.DESCRIPCION,
-            MARCA: row.MARCA,
-            UNIDAD: row.UNIDAD,
-            GRUPO: row.GRUPO,
             MODELO: row.MODELO,
+            MARCA: row.MARCA || "GENERAL",
+            UNIDAD: row.UNIDAD,
+            GRUPO: row.GRUPO || "MUESTRA",
+            SUBGRUPO: row.SUBGRUPO || "ACCESORIES",
+            FECHACIF: row.FECHACIF,
             IVA: row.IVA,
             GARANTIA: row.GARANTIA,
             USUARIO: row.USUARIO,
-            NUMEROPARTE: row.NUMEROPARTE,
-            CARACTERISTICAS: row.CARACTERISTICAS,
           };
           if (!base.CODIGO)
             errs.push({ index, field: "CODIGO", msg: "Falta CODIGO" });
-          if (!base.MARCA)
-            errs.push({ index, field: "MARCA", msg: "Falta MARCA" });
-          if (!base.GRUPO)
-            errs.push({ index, field: "GRUPO", msg: "Falta GRUPO" });
-          if (!base.DESCRIPCION && !base.CARACTERISTICAS)
-            errs.push({
-              index,
-              field: "DESCRIPCION",
-              msg: "Falta DESCRIPCION o CARACTERISTICAS",
-            });
+          // DESCRIPCION ahora es opcional (backend hace fallback a MODELO o CODIGO)
           return base;
         }
+        // DFSK (seleccionado o auto-detectado)
         const base = {
           CODIGO: row.CODIGO,
           DESCRIPCION: row.DESCRIPCION,
@@ -289,15 +309,15 @@ const Dropzone = () => {
         const preferredVen = [
           "CODIGO",
           "DESCRIPCION",
+          "MODELO",
           "MARCA",
           "UNIDAD",
           "GRUPO",
-          "MODELO",
+          "SUBGRUPO",
+          "FECHACIF",
           "IVA",
           "GARANTIA",
           "USUARIO",
-          "NUMEROPARTE",
-          "CARACTERISTICAS",
         ];
         const preferredDfsk = [
           "CODIGO",
@@ -326,12 +346,21 @@ const Dropzone = () => {
           "USUARIO",
         ];
         const all = Object.keys(parsed[0]);
-        const ord = (isVenepacBase ? preferredVen : preferredDfsk).filter((k) =>
-          all.includes(k)
-        );
+        const ord = (
+          isVenepacBase && !forzarDfsk ? preferredVen : preferredDfsk
+        ).filter((k) => all.includes(k));
         const rest = all.filter((k) => !ord.includes(k));
         setDisplayColumns([...ord, ...rest]);
       } else setDisplayColumns([]);
+      if (!parsed.length) {
+        setFeedback(
+          "El archivo parece vacío o la primera hoja no contiene datos bajo los encabezados esperados."
+        );
+      } else if (!isDFSK && forzarDfsk) {
+        setFeedback(
+          "Plantilla detectada como DFSK: selecciona la base DFSK antes de guardar para validar catálogos."
+        );
+      }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -387,38 +416,42 @@ const Dropzone = () => {
     });
   };
 
-  const generarPlantilla = () => {
+  const generarPlantillaVenepac = () => {
     const wb = XLSX.utils.book_new();
-    if (selectedDatabase === "venepac") {
-      const rows = [
-        [
-          "CODIGO",
-          "DESCRIPCION",
-          "MARCA",
-          "UNIDAD",
-          "GRUPO",
-          "MODELO",
-          "IVA",
-          "GARANTIA",
-          "USUARIO",
-        ],
-        [
-          "VP0001",
-          "EJEMPLO DESCRIPCION",
-          "MARCA DEMO",
-          "UND",
-          "GRUPO 1",
-          "MDL-1",
-          "16,00",
-          "0.00",
-          "ADMN",
-        ],
-      ];
-      const ws = XLSX.utils.aoa_to_sheet(rows);
-      XLSX.utils.book_append_sheet(wb, ws, "PLANTILLA_VENEPAC");
-      XLSX.writeFile(wb, "plantilla_venepac.xlsx");
-      return;
-    }
+    const rows = [
+      [
+        "CODIGO",
+        "DESCRIPCION",
+        "MODELO",
+        "MARCA",
+        "UNIDAD",
+        "GRUPO",
+        "SUBGRUPO",
+        "FECHACIF",
+        "IVA",
+        "GARANTIA",
+        "USUARIO",
+      ],
+      [
+        "VP0001",
+        "EJEMPLO DESCRIPCION",
+        "MODELOX",
+        "GENERAL",
+        "UND",
+        "MUESTRA",
+        "ACCESORIES",
+        "02/10/2025",
+        "16,00",
+        "0.00",
+        "ADMN",
+      ],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "PLANTILLA_VENEPAC");
+    XLSX.writeFile(wb, "plantilla_venepac.xlsx");
+  };
+  const generarPlantillaDfsk = () => {
+    const wb = XLSX.utils.book_new();
     const rows = [
       [
         "CODIGO",
@@ -440,19 +473,19 @@ const Dropzone = () => {
       [
         "DF000012",
         "NEW-PRUEBAS",
-        "NEW-PRUEBAS",
         "ALISTAMIENTO",
+        "UNID",
         "16,00",
         "02/10/2025",
         "0.00",
-        "GRUPO 1",
+        "GRUPO  1",
         "ADMN",
         "A/A",
         "A/A",
         "D1",
-        "D1 detalle",
+        "new partes",
         "809050HM",
-        "SIN MODELO, C31, C32",
+        "SIN MODELO, C31, C32, GLORY 330",
       ],
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -468,12 +501,42 @@ const Dropzone = () => {
       const wsCat = XLSX.utils.aoa_to_sheet(wsCatData);
       XLSX.utils.book_append_sheet(wb, wsCat, "CATALOGOS");
     }
-    XLSX.writeFile(wb, "plantilla_articulos.xlsx");
+    XLSX.writeFile(wb, "plantilla_articulos_dfsk.xlsx");
   };
 
   return (
     <div className="app-root-bg" style={{ minHeight: "100vh", padding: "3vw" }}>
       <Container fluid>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 12,
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
+          <Button
+            size="small"
+            basic
+            color="teal"
+            icon
+            labelPosition="left"
+            onClick={generarPlantillaVenepac}
+          >
+            <Icon name="download" /> Plantilla VENEPAC
+          </Button>
+          <Button
+            size="small"
+            basic
+            color="violet"
+            icon
+            labelPosition="left"
+            onClick={generarPlantillaDfsk}
+          >
+            <Icon name="download" /> Plantilla DFSK
+          </Button>
+        </div>
         <div className="dz-wrapper">
           <div className="dz-panel dz-select-db">
             <div className="dz-header-inline">
@@ -487,11 +550,6 @@ const Dropzone = () => {
               placeholder="Selecciona base de datos"
               options={[
                 { key: "venepac", value: "venepac", text: "VENEPAC" },
-                {
-                  key: "prueba_venepac",
-                  value: "prueba_venepac",
-                  text: "Prueba VENEPAC",
-                },
                 {
                   key: "prueba_venepac",
                   value: "prueba_venepac",
@@ -638,7 +696,11 @@ const Dropzone = () => {
                     basic
                     icon
                     labelPosition="left"
-                    onClick={generarPlantilla}
+                    onClick={() =>
+                      isVenepacBase
+                        ? generarPlantillaVenepac()
+                        : generarPlantillaDfsk()
+                    }
                   >
                     <Icon name="download" /> Plantilla
                   </Button>
