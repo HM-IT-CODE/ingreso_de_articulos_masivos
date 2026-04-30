@@ -4,754 +4,270 @@ import * as XLSX from "xlsx";
 import {
   Table,
   Icon,
-  Segment,
   Header,
   Message,
   Button,
   Select,
   Container,
+  Menu,
 } from "semantic-ui-react";
 import "./styles.css";
+import SeriesControl from "./SeriesControl";
+import pkg from "../../package.json";
 
-// Componente mínimo limpio. Próximos pasos: reintroducir catálogos y validaciones.
+const STORAGE_SELECTED_DB = "dz:selectedDatabase";
+const STORAGE_ACTIVE_DB = "dz:activeDatabase";
+
+const DISPLAY_COLUMNS_VENEPAC = [
+  "CODIGO", "DESCRIPCION", "MODELO", "MARCA", "UNIDAD", "GRUPO", "SUBGRUPO", "FECHACIF", "IVA", "GARANTIA", "USUARIO"
+];
+
+const DISPLAY_COLUMNS_DFSK = [
+  "CODIGO", "DESCRIPCION", "MARCA", "UNIDAD", "GRUPOG", "CLASIFICACION", "GRUPOF", "CATEGORIAF", "MODELOF", "CARACTERISTICASF", "NUMEROPARTEF", "APLICAF", "UBICACIONF", "TRANSMISIONF", "PUERTASF", "STATUS_FICHA"
+];
+
+const readStorage = (key) => {
+  try { return window.localStorage.getItem(key) || ""; } catch { return ""; }
+};
+
+const writeStorage = (key, value) => {
+  try { if (value) window.localStorage.setItem(key, value); else window.localStorage.removeItem(key); } catch {}
+};
+
 const Dropzone = () => {
-  const [selectedDatabase, setSelectedDatabase] = useState("");
+  const [selectedDatabase, setSelectedDatabase] = useState(() => readStorage(STORAGE_SELECTED_DB));
   const [testResult, setTestResult] = useState(null);
-  const [conexionActiva, setConexionActiva] = useState("");
+  const [conexionActiva, setConexionActiva] = useState(() => readStorage(STORAGE_ACTIVE_DB));
   const [data, setData] = useState([]);
   const [displayColumns, setDisplayColumns] = useState([]);
   const [rowErrors, setRowErrors] = useState([]);
   const [feedback, setFeedback] = useState(null);
-  // Catálogos
-  const [mapGrupos, setMapGrupos] = useState({});
-  const [mapCategorias, setMapCategorias] = useState({});
-  const [mapMarcas, setMapMarcas] = useState({});
-  const [grupoKeys, setGrupoKeys] = useState([]);
-  const [marcaKeys, setMarcaKeys] = useState([]);
-  const [catStatus, setCatStatus] = useState(null);
-  const [marcasStatus, setMarcasStatus] = useState(null);
-  const [autoRevalidated, setAutoRevalidated] = useState(false);
-
-  const isDFSK =
-    selectedDatabase === "dfsk" || selectedDatabase === "prueba_dfsk";
-  const isVenepacBase =
-    selectedDatabase === "venepac" || selectedDatabase === "prueba_venepac";
-  const norm = (v) =>
-    v
-      ? String(v)
-          .normalize("NFD")
-          .replace(/\p{Diacritic}/gu, "")
-          .replace(/\s+/g, " ")
-          .trim()
-          .toUpperCase()
-      : "";
-
-  const instructivo = isVenepacBase
-    ? [
-        "Plantilla VENEPAC: CODIGO, DESCRIPCION(opc), MODELO(opc), MARCA(opc), UNIDAD, GRUPO(opc), SUBGRUPO(opc), FECHACIF(opc), IVA(opc), GARANTIA(opc), USUARIO(opc)",
-        "Si DESCRIPCION se deja vacía se usará MODELO y si también falta MODELO se usará el CODIGO como descripción/ficha",
-        "Defaults: MARCA=GENERAL, GRUPO=MUESTRA, SUBGRUPO=ACCESORIES si se dejan vacíos",
-        "Seleccionar base venepac y probar conexión",
-        "Cargar Excel y revisar errores mínimos",
-        "Guardar",
-      ]
-    : [
-        "Plantilla DFSK avanzada (botón Plantilla)",
-        "Seleccionar base dfsk / prueba_dfsk y probar conexión",
-        "Esperar carga de catálogos (marcas / grupos / categorías)",
-        "Revisar STATUS_FICHA (OK / FALTAN: ...)",
-        "Guardar",
-      ];
-
-  // Carga catálogos
-  useEffect(() => {
-    if (!isDFSK) {
-      setMapGrupos({});
-      setMapCategorias({});
-      setMapMarcas({});
-      setGrupoKeys([]);
-      setMarcaKeys([]);
-      setCatStatus(null);
-      setMarcasStatus(null);
-      setAutoRevalidated(false);
-      return;
-    }
-    const target =
-      selectedDatabase === "prueba_dfsk" ? "dfsk" : selectedDatabase;
-    setCatStatus("Cargando categorías/grupos...");
-    window.electron.ipcRenderer.send("obtener-categorias", target);
-    window.electron.ipcRenderer.once("obtener-categorias-respuesta", (r) => {
-      if (r.success) {
-        const g = {},
-          c = {};
-        r.data.forEach((row) => {
-          if (row.GRUPO && row.IDGRUPO) g[norm(row.GRUPO)] = row.IDGRUPO;
-          if (row.CATEGORIA && row.IDCATEGORIA)
-            c[norm(row.CATEGORIA)] = {
-              IDCATEGORIA: row.IDCATEGORIA,
-              IDGRUPO: row.IDGRUPO,
-            };
-        });
-        setMapGrupos(g);
-        setGrupoKeys(Object.keys(g));
-        setMapCategorias(c);
-        setCatStatus(`Categorías/Grupos cargados: ${r.data.length}`);
-        if (data.length)
-          setTimeout(() => revalidateRows(data, g, c, mapMarcas), 0);
-      } else setCatStatus("Error catálogos: " + r.mensaje);
-    });
-    setMarcasStatus("Cargando marcas...");
-    window.electron.ipcRenderer.send("obtener-marcas", target);
-    window.electron.ipcRenderer.once("obtener-marcas-respuesta", (r) => {
-      if (r.success) {
-        const m = {};
-        r.data.forEach((row) => {
-          if (row.DESCRIPCION && row.CODIGO)
-            m[norm(row.DESCRIPCION)] = row.CODIGO;
-        });
-        setMapMarcas(m);
-        setMarcaKeys(Object.keys(m));
-        setMarcasStatus(`Marcas cargadas: ${Object.keys(m).length}`);
-        if (data.length)
-          setTimeout(
-            () => revalidateRows(data, mapGrupos, mapCategorias, m),
-            0
-          );
-      } else setMarcasStatus("Error marcas: " + r.mensaje);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDatabase]);
+  const [uploadedFileName, setUploadedFileName] = useState("");
+  const [activeView, setActiveView] = useState("carga");
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    if (
-      isDFSK &&
-      data.length &&
-      Object.keys(mapGrupos).length &&
-      Object.keys(mapMarcas).length &&
-      !autoRevalidated
-    ) {
-      revalidateRows(data, mapGrupos, mapCategorias, mapMarcas);
-      setAutoRevalidated(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapGrupos, mapMarcas, mapCategorias, data]);
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const revalidateRows = (rows, grupos, categorias, marcas) => {
-    if (!isDFSK) return;
-    const aliasGrupoA = { CIERPRE: "GRUPO 1" };
-    const errs = [];
-    const updated = rows.map((row, index) => {
-      let marcaCode = null;
-      if (row.MARCA) {
-        const mk = norm(row.MARCA);
-        if (marcas[mk] != null) marcaCode = marcas[mk];
-        else errs.push({ index, field: "MARCA", msg: "Marca no encontrada" });
-      } else errs.push({ index, field: "MARCA", msg: "Falta MARCA" });
-      let grpA = row.GRUPOA;
-      if (grpA) {
-        const alias = aliasGrupoA[norm(grpA)];
-        if (alias) grpA = alias;
-      }
-      let idGrupoArticulo = null;
-      if (grpA) {
-        const gk = norm(grpA);
-        if (grupos[gk] != null) idGrupoArticulo = grupos[gk];
-        else {
-          const m = /GRUPO\s*(\d+)/i.exec(String(grpA).replace(/\s+/g, " "));
-          if (m) idGrupoArticulo = parseInt(m[1], 10);
-        }
-      }
-      if (idGrupoArticulo == null)
-        errs.push({ index, field: "GRUPO A", msg: "Grupo A no mapeado" });
-      const catName = norm(row.CATEGORIA);
-      const fichaName = norm(row.FICHA_GRUPO);
-      let idGrupoFicha = null,
-        idCategoriaFicha = null;
-      if (catName && categorias[catName]) {
-        idCategoriaFicha = categorias[catName].IDCATEGORIA;
-        idGrupoFicha = categorias[catName].IDGRUPO;
-      } else if (fichaName && grupos[fichaName] != null)
-        idGrupoFicha = grupos[fichaName];
-      else if (row.FICHA_GRUPO) {
-        const gm = /GRUPO\s*(\d+)/i.exec(
-          String(row.FICHA_GRUPO).replace(/\s+/g, " ")
-        );
-        if (gm) idGrupoFicha = parseInt(gm[1], 10);
-      }
-      if (!idGrupoFicha)
-        errs.push({ index, field: "GRUPO", msg: "Grupo ficha no mapeado" });
-      const faltan = [];
-      if (!marcaCode) faltan.push("MARCA");
-      if (idGrupoArticulo == null) faltan.push("GRUPO A");
-      if (!idGrupoFicha) faltan.push("GRUPO FICHA");
-      const STATUS_FICHA =
-        faltan.length === 0 ? "OK" : "FALTAN: " + faltan.join(", ");
-      return {
-        ...row,
-        MARCA_CODE: marcaCode,
-        GRUPO: idGrupoArticulo != null ? idGrupoArticulo : row.GRUPO,
-        IDGRUPO_FICHA: idGrupoFicha,
-        IDCATEGORIA_FICHA: idCategoriaFicha,
-        STATUS_FICHA,
-      };
-    });
-    setData(updated);
-    setRowErrors(errs);
-  };
+  const isDFSK = selectedDatabase === "dfsk" || selectedDatabase === "prueba_dfsk";
+  const isVenepacBase = selectedDatabase === "venepac" || selectedDatabase === "prueba_venepac";
+
+  useEffect(() => { writeStorage(STORAGE_SELECTED_DB, selectedDatabase); }, [selectedDatabase]);
+  useEffect(() => { writeStorage(STORAGE_ACTIVE_DB, conexionActiva); }, [conexionActiva]);
 
   const testConexion = () => {
     if (!selectedDatabase) {
-      setTestResult("Debes seleccionar una base de datos.");
+      setTestResult("Error: Selecciona una base de datos");
       return;
     }
     setTestResult("Probando conexión...");
-    window.electron.ipcRenderer.send("test-conexion", selectedDatabase);
-    window.electron.ipcRenderer.once("test-conexion-respuesta", (resp) => {
-      if (resp.success) {
-        setTestResult(resp.mensaje);
-        setConexionActiva(selectedDatabase);
-      } else {
-        setTestResult(resp.mensaje);
-        setConexionActiva("");
+    if (window.electron && window.electron.ipcRenderer) {
+      window.electron.ipcRenderer.send("test-conexion", selectedDatabase);
+      window.electron.ipcRenderer.once("test-conexion-respuesta", (res) => {
+        if (res.exito) {
+          setTestResult("Conexión exitosa a " + selectedDatabase);
+          setConexionActiva(selectedDatabase);
+        } else {
+          setTestResult("Error: " + (res.error || "No se pudo conectar al servidor SQL"));
+          setConexionActiva("");
+        }
+      });
+    }
+  };
+
+  const processExcelData = (rawData) => {
+    const errs = [];
+    const processed = rawData.map((row, index) => {
+      const cleanRow = {};
+      Object.keys(row).forEach(k => cleanRow[String(k).trim().toUpperCase()] = row[k]);
+
+      const dato = {
+        CODIGO: cleanRow.CODIGO || cleanRow.ARTICULO || "",
+        DESCRIPCION: cleanRow.DESCRIPCION || "",
+        MARCA: cleanRow.MARCA || "",
+        UNIDAD: cleanRow.UNIDAD || "",
+        GRUPOG: cleanRow.GRUPOG || cleanRow["GRUPO G"] || "",
+        CLASIFICACION: cleanRow.CLASIFICACION || cleanRow.GRUPOA || "",
+        GRUPOF: cleanRow.GRUPOF || cleanRow.GRUPO || "",
+        CATEGORIAF: cleanRow.CATEGORIAF || cleanRow.CATEGORIA || "",
+        MODELOF: cleanRow.MODELOF || cleanRow.MODELO || "",
+        STATUS_FICHA: "OK"
+      };
+
+      if (!dato.CODIGO) errs.push({ index, field: "CODIGO", msg: "Falta código" });
+      
+      if (isDFSK) {
+        const faltantes = [];
+        if (!dato.GRUPOF) faltantes.push("GRUPO");
+        if (!dato.CATEGORIAF) faltantes.push("CAT");
+        if (!dato.MODELOF) faltantes.push("MOD");
+        if (faltantes.length) dato.STATUS_FICHA = "FALTAN: " + faltantes.join(",");
       }
-      setTimeout(() => setTestResult(null), 2500);
+
+      return { ...row, ...dato };
     });
+
+    setData(processed);
+    setRowErrors(errs);
+    setDisplayColumns(isDFSK ? DISPLAY_COLUMNS_DFSK : DISPLAY_COLUMNS_VENEPAC);
   };
 
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0];
-    if (!file) return;
+    setUploadedFileName(file.name);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      // Leer headers crudos para auto-detección
-      const rawRows = XLSX.utils.sheet_to_json(sheet, {
-        header: 1,
-        defval: "",
-      });
-      const headers = (rawRows[0] || []).map((h) => String(h || "").trim());
-      console.log("Headers detectados:", headers);
-      // Auto-detección DFSK si aparecen columnas típicas
-      const dfsKIndicadores = [
-        "CARACTERISTICAS",
-        "NUMEROPARTE",
-        "APLICA",
-        "GRUPO A",
-        "CATEGORIA",
-      ]; // mayúsculas
-      const hasDfskSignature = headers.some((h) =>
-        dfsKIndicadores.includes(h.toUpperCase())
-      );
-      const forzarDfsk = !isDFSK && hasDfskSignature; // Usuario no seleccionó base dfsk pero plantilla lo parece
-      if (forzarDfsk) {
-        console.warn(
-          "Auto-detección: plantilla coincide con DFSK aunque no se seleccionó base DFSK."
-        );
-      }
-      // Convertir a objetos manteniendo celdas vacías
-      const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-      const errs = [];
-      const parsed = json.map((row, index) => {
-        const usarDfsk = (isDFSK || forzarDfsk) && !isVenepacBase;
-        if (!usarDfsk && isVenepacBase) {
-          const base = {
-            CODIGO: row.CODIGO,
-            DESCRIPCION: row.DESCRIPCION,
-            MODELO: row.MODELO,
-            MARCA: row.MARCA || "GENERAL",
-            UNIDAD: row.UNIDAD,
-            GRUPO: row.GRUPO || "MUESTRA",
-            SUBGRUPO: row.SUBGRUPO || "ACCESORIES",
-            FECHACIF: row.FECHACIF,
-            IVA: row.IVA,
-            GARANTIA: row.GARANTIA,
-            USUARIO: row.USUARIO,
-          };
-          if (!base.CODIGO)
-            errs.push({ index, field: "CODIGO", msg: "Falta CODIGO" });
-          // DESCRIPCION ahora es opcional (backend hace fallback a MODELO o CODIGO)
-          return base;
-        }
-        // DFSK (seleccionado o auto-detectado)
-        const base = {
-          CODIGO: row.CODIGO,
-          DESCRIPCION: row.DESCRIPCION,
-          MARCA: row.MARCA,
-          UNIDAD: row.UNIDAD,
-          IVA: row.IVA,
-          FECHACIF: row.FECHACIF,
-          GARANTIA: row.GARANTIA,
-          GRUPOA: row["GRUPO A"] || row.GRUPOA || row.GRUPO_A,
-          FICHA_GRUPO: row.GRUPO,
-          CATEGORIA: row.CATEGORIA,
-          MODELO: row.MODELO,
-          USUARIO: row.USUARIO,
-          NUMEROPARTE: row.NUMEROPARTE,
-          CARACTERISTICAS: row.CARACTERISTICAS,
-          APLICA: row.APLICA,
-        };
-        if (!base.CODIGO)
-          errs.push({ index, field: "CODIGO", msg: "Falta CODIGO" });
-        if (!base.MARCA)
-          errs.push({ index, field: "MARCA", msg: "Falta MARCA" });
-        if (!base.DESCRIPCION && !base.CARACTERISTICAS)
-          errs.push({
-            index,
-            field: "DESCRIPCION",
-            msg: "Falta DESCRIPCION o CARACTERISTICAS",
-          });
-        return base;
-      });
-      setData(parsed);
-      setRowErrors(errs);
-      if (parsed.length) {
-        const preferredVen = [
-          "CODIGO",
-          "DESCRIPCION",
-          "MODELO",
-          "MARCA",
-          "UNIDAD",
-          "GRUPO",
-          "SUBGRUPO",
-          "FECHACIF",
-          "IVA",
-          "GARANTIA",
-          "USUARIO",
-        ];
-        const preferredDfsk = [
-          "CODIGO",
-          "DESCRIPCION",
-          "MARCA",
-          "MARCA_CODE",
-          "UNIDAD",
-          "IVA",
-          "FECHACIF",
-          "GARANTIA",
-          "IVA",
-          "CIF",
-          "GRUPOA",
-          "GRUPO",
-          "FICHA_GRUPO",
-          "CATEGORIA",
-          "MODELO",
-          "IDMODELO",
-          "NUMEROPARTE",
-          "CARACTERISTICAS",
-          "APLICA",
-          "URLIMAGEN",
-          "STATUS_FICHA",
-          "IDGRUPO_FICHA",
-          "IDCATEGORIA_FICHA",
-          "USUARIO",
-        ];
-        const all = Object.keys(parsed[0]);
-        const ord = (
-          isVenepacBase && !forzarDfsk ? preferredVen : preferredDfsk
-        ).filter((k) => all.includes(k));
-        const rest = all.filter((k) => !ord.includes(k));
-        setDisplayColumns([...ord, ...rest]);
-      } else setDisplayColumns([]);
-      if (!parsed.length) {
-        setFeedback(
-          "El archivo parece vacío o la primera hoja no contiene datos bajo los encabezados esperados."
-        );
-      } else if (!isDFSK && forzarDfsk) {
-        setFeedback(
-          "Plantilla detectada como DFSK: selecciona la base DFSK antes de guardar para validar catálogos."
-        );
-      }
+      const bstr = e.target.result;
+      const wb = XLSX.read(bstr, { type: "binary" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rawData = XLSX.utils.sheet_to_json(ws);
+      processExcelData(rawData);
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsBinaryString(file);
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-  const sendToBackend = () => {
-    if (!data.length) {
-      setFeedback("No hay datos para enviar al backend.");
-      return;
-    }
-    if (!selectedDatabase) {
-      setFeedback("Debes seleccionar una base de datos.");
-      return;
-    }
-    if (rowErrors.length) {
-      setFeedback(
-        `Existen ${rowErrors.length} errores. Corrige antes de enviar.`
-      );
-      return;
-    }
-    // Transformar para backend: DFSK usa códigos numéricos ya resueltos
-    const toSend = isDFSK
-      ? data.map((r) => {
-          const c = { ...r };
-          if (c.MARCA_CODE != null) {
-            c.MARCA = c.MARCA_CODE;
-            delete c.MARCA_CODE;
-          }
-          if (c.IDGRUPO_FICHA && !c.IDGRUPO) c.IDGRUPO = c.IDGRUPO_FICHA;
-          if (c.IDCATEGORIA_FICHA && !c.IDCATEGORIA)
-            c.IDCATEGORIA = c.IDCATEGORIA_FICHA;
-          return c;
-        })
-      : data;
-    setFeedback("Enviando datos...");
-    window.electron.ipcRenderer.send("insertar-datos", {
-      database: selectedDatabase,
-      data: toSend,
-    });
-    window.electron.ipcRenderer.once("insertar-datos-respuesta", (resp) => {
-      if (Array.isArray(resp)) {
-        const ok = resp.filter((r) => r.status === "Insertado").length;
-        const fail = resp.filter((r) => r.status !== "Insertado").length;
-        const warns = resp.filter((r) => r.warn).length;
-        setFeedback(
-          `Insertados: ${ok} | Fallidos: ${fail}${
-            warns ? " | Advertencias: " + warns : ""
-          }`
-        );
-        // No limpiamos automáticamente para que el usuario pueda revisar; ofreceremos botón.
-      } else setFeedback("Hubo un error en la inserción de datos: " + resp);
-    });
-  };
-
   const generarPlantillaVenepac = () => {
+    const ws = XLSX.utils.json_to_sheet([{ CODIGO: "", DESCRIPCION: "", MODELO: "", MARCA: "", UNIDAD: "UNID", GRUPO: "", SUBGRUPO: "" }]);
     const wb = XLSX.utils.book_new();
-    const rows = [
-      [
-        "CODIGO",
-        "DESCRIPCION",
-        "MODELO",
-        "MARCA",
-        "UNIDAD",
-        "GRUPO",
-        "SUBGRUPO",
-        "FECHACIF",
-        "IVA",
-        "GARANTIA",
-        "USUARIO",
-      ],
-      [
-        "VP0001",
-        "EJEMPLO DESCRIPCION",
-        "MODELOX",
-        "GENERAL",
-        "UND",
-        "MUESTRA",
-        "ACCESORIES",
-        "02/10/2025",
-        "16,00",
-        "0.00",
-        "ADMN",
-      ],
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    XLSX.utils.book_append_sheet(wb, ws, "PLANTILLA_VENEPAC");
+    XLSX.utils.book_append_sheet(wb, ws, "Plantilla");
     XLSX.writeFile(wb, "plantilla_venepac.xlsx");
   };
+
   const generarPlantillaDfsk = () => {
+    const ws = XLSX.utils.json_to_sheet([{ CODIGO: "", DESCRIPCION: "", MARCA: "", UNIDAD: "UNID", GRUPOG: "", CLASIFICACION: "", GRUPOF: "", CATEGORIAF: "", MODELOF: "", CARACTERISTICASF: "", NUMEROPARTEF: "", APLICAF: "", UBICACIONF: "" }]);
     const wb = XLSX.utils.book_new();
-    const rows = [
-      [
-        "CODIGO",
-        "DESCRIPCION",
-        "MARCA",
-        "UNIDAD",
-        "IVA",
-        "FECHACIF",
-        "GARANTIA",
-        "GRUPO A",
-        "USUARIO",
-        "GRUPO",
-        "CATEGORIA",
-        "MODELO",
-        "CARACTERISTICAS",
-        "NUMEROPARTE",
-        "APLICA",
-      ],
-      [
-        "DF000012",
-        "NEW-PRUEBAS",
-        "ALISTAMIENTO",
-        "UNID",
-        "16,00",
-        "02/10/2025",
-        "0.00",
-        "GRUPO  1",
-        "ADMN",
-        "A/A",
-        "A/A",
-        "D1",
-        "new partes",
-        "809050HM",
-        "SIN MODELO, C31, C32, GLORY 330",
-      ],
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    XLSX.utils.book_append_sheet(wb, ws, "PLANTILLA");
-    if (marcaKeys.length || grupoKeys.length) {
-      const wsCatData = [
-        ["MARCAS"],
-        ...marcaKeys.map((k) => [k]),
-        [],
-        ["GRUPOS"],
-        ...grupoKeys.map((k) => [k]),
-      ];
-      const wsCat = XLSX.utils.aoa_to_sheet(wsCatData);
-      XLSX.utils.book_append_sheet(wb, wsCat, "CATALOGOS");
-    }
-    XLSX.writeFile(wb, "plantilla_articulos_dfsk.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Plantilla_DFSK");
+    XLSX.writeFile(wb, "plantilla_dfsk.xlsx");
   };
 
+  const sendToBackend = () => {
+    if (!conexionActiva) return;
+    setFeedback(<Message info content="Procesando carga..." />);
+    window.electron.ipcRenderer.send("insertar-datos", { database: selectedDatabase, data: data });
+    window.electron.ipcRenderer.once("insertar-datos-respuesta", (res) => {
+      if (res.exito) setFeedback(<Message positive content={`Procesados ${res.procesados} registros.`} />);
+      else setFeedback(<Message negative content={res.error} />);
+    });
+  };
+
+  const connectionState = conexionActiva === selectedDatabase ? "Conectado" : "Desconectado";
+  const connectionTone = conexionActiva === selectedDatabase ? "dz-status-pill-ok" : "dz-status-pill-error";
+
+  const instructivo = isVenepacBase 
+    ? ["Plantilla VENEPAC: CODIGO, DESCRIPCION, MODELO", "Seleccionar base y Probar Conexión"]
+    : ["Plantilla DFSK: CODIGO, DESCRIPCION, MARCA", "Se validan catálogos en tiempo real"];
+
   return (
-    <div className="app-root-bg" style={{ minHeight: "100vh", padding: "3vw" }}>
-      <Container fluid>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 12,
-            flexWrap: "wrap",
-            marginBottom: 12,
-          }}
-        >
-          <Button
-            size="small"
-            basic
-            color="teal"
-            icon
-            labelPosition="left"
-            onClick={generarPlantillaVenepac}
-          >
-            <Icon name="download" /> Plantilla VENEPAC
-          </Button>
-          <Button
-            size="small"
-            basic
-            color="violet"
-            icon
-            labelPosition="left"
-            onClick={generarPlantillaDfsk}
-          >
-            <Icon name="download" /> Plantilla DFSK
-          </Button>
-        </div>
-        <div className="dz-wrapper">
-          <div className="dz-panel dz-select-db">
-            <div className="dz-header-inline">
-              <Icon name="database" color="blue" /> <h4>Configuración</h4>
+    <div className="app-root-bg">
+      <Container fluid className="dz-wrapper dz-animate-fade">
+        <div className="dz-header-pro">
+          <div className="dz-header-pro-left" style={{ minWidth: '300px' }}>
+            <Icon name="shield alternate" size="large" inverted circular style={{ background: 'var(--gradient-pro)', margin: 0 }} />
+            <div style={{ marginLeft: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-main)', fontWeight: 800 }}>PANEL DE CONTROL</span>
+                <span style={{ color: '#e2e8f0' }}>•</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', fontWeight: 800 }}>v{pkg.version} Enterprise</span>
+              </div>
+              <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '2px' }}>
+                Última Compilación: {new Date().toLocaleDateString()} {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </div>
             </div>
-            <Header as="h5" style={{ marginTop: 20, fontWeight: 600 }}>
-              Base de datos
-            </Header>
-            <Select
-              fluid
-              placeholder="Selecciona base de datos"
-              options={[
-                { key: "venepac", value: "venepac", text: "VENEPAC" },
-                {
-                  key: "prueba_venepac",
-                  value: "prueba_venepac",
-                  text: "Prueba VENEPAC",
-                },
-                { key: "dfsk", value: "dfsk", text: "DFSK" },
-                {
-                  key: "prueba_dfsk",
-                  value: "prueba_dfsk",
-                  text: "Prueba DFSK",
-                },
-              ]}
-              value={selectedDatabase}
-              onChange={(e, { value }) => setSelectedDatabase(value)}
-              style={{ marginTop: 6 }}
-            />
-            <Button
-              fluid
-              secondary
-              icon
-              labelPosition="left"
-              style={{ marginTop: 14 }}
-              onClick={testConexion}
-            >
-              <Icon name="plug" /> Probar conexión
-            </Button>
-            {testResult && (
-              <Message
-                size="tiny"
-                style={{ marginTop: 12 }}
-                positive={testResult.includes("exitosa")}
-                negative={testResult.includes("Error")}
-              >
-                {testResult}
-              </Message>
-            )}
-            {conexionActiva && (
-              <div className="dz-badges" style={{ marginTop: 8 }}>
-                <div className="dz-badge dz-chip-ok">
-                  <Icon name="check circle" /> Conectado a {conexionActiva}
-                </div>
+          </div>
+          <div className="dz-header-pro-right">
+            <Button.Group size="tiny" basic>
+              <Button color="teal" icon="file excel" content="Plantilla VENEPAC" onClick={generarPlantillaVenepac} />
+              <Button color="violet" icon="file excel" content="Plantilla DFSK" onClick={generarPlantillaDfsk} />
+            </Button.Group>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem', alignItems: 'start' }}>
+          <aside className="dz-sidebar">
+            <div className="dz-panel">
+              <h4 style={{ fontSize: '0.9rem', marginBottom: '1rem' }}><Icon name="options" /> Configuración</h4>
+              <label style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--color-text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '5px' }}>Base de Datos</label>
+              <Select
+                fluid size="small"
+                options={[
+                  { key: "v", value: "venepac", text: "VENEPAC (Producción)" },
+                  { key: "pv", value: "prueba_venepac", text: "VENEPAC (Pruebas)" },
+                  { key: "d", value: "dfsk", text: "DFSK (Producción)" },
+                  { key: "pd", value: "prueba_dfsk", text: "DFSK (Pruebas)" },
+                ]}
+                value={selectedDatabase}
+                onChange={(e, { value }) => { 
+                  setSelectedDatabase(value); 
+                  if (value !== conexionActiva) setConexionActiva(""); 
+                }}
+                style={{ marginBottom: '10px' }}
+              />
+              <Button fluid size="small" secondary onClick={testConexion} style={{ height: '34px' }}>
+                <Icon name="plug" /> Probar Conexión
+              </Button>
+              {testResult && <Message size="mini" positive={testResult.includes("exitosa")} negative={testResult.includes("Error")} content={testResult} style={{ marginTop: '10px' }} />}
+              <div className="dz-status-grid" style={{ gridTemplateColumns: '1fr 1fr', marginTop: '1rem' }}>
+                <div className="dz-status-card"><span className="dz-status-label">Estado</span><div className={`dz-status-pill ${connectionTone}`} style={{ fontSize: '0.65rem' }}>{connectionState}</div></div>
+                <div className="dz-status-card"><span className="dz-status-label">Filas</span><strong style={{ fontSize: '0.85rem' }}>{data.length}</strong></div>
               </div>
-            )}
-            {isDFSK && catStatus && (
-              <Message
-                size="tiny"
-                style={{ marginTop: 16 }}
-                info={!catStatus.startsWith("Error")}
-                error={catStatus.startsWith("Error")}
-              >
-                {catStatus}
-              </Message>
-            )}
-            {isDFSK && marcasStatus && (
-              <Message
-                size="tiny"
-                style={{ marginTop: 8 }}
-                info={!marcasStatus.startsWith("Error")}
-                error={marcasStatus.startsWith("Error")}
-              >
-                {marcasStatus}
-              </Message>
-            )}
-            <Header as="h5" style={{ marginTop: 28, fontWeight: 600 }}>
-              Instructivo
-            </Header>
-            <ul className="dz-instructivo-list">
-              {instructivo.map((t, i) => (
-                <li key={i}>{t}</li>
-              ))}
-            </ul>
-            {rowErrors.length > 0 && (
-              <Message error size="tiny" style={{ marginTop: 18 }}>
-                <Message.Header style={{ fontSize: "0.85rem" }}>
-                  Errores ({rowErrors.length})
-                </Message.Header>
-                <ul className="dz-errors-list">
-                  {rowErrors.slice(0, 30).map((er, i) => (
-                    <li key={i}>
-                      Fila {er.index + 2} - {er.field}: {er.msg}
-                    </li>
-                  ))}
-                  {rowErrors.length > 30 && (
-                    <li>...más ({rowErrors.length - 30})</li>
-                  )}
+              <div className="dz-instructivo-box" style={{ marginTop: '1.2rem' }}>
+                <h5 style={{ fontSize: '0.8rem' }}><Icon name="info circle" /> Guía</h5>
+                <ul className="dz-instructivo-list">
+                  {instructivo.map((t, i) => <li key={i} style={{ fontSize: '0.7rem' }}>{t}</li>)}
                 </ul>
-              </Message>
-            )}
-          </div>
-          <div>
-            <Segment className="dz-dropzone" {...getRootProps()}>
-              <input {...getInputProps()} />
-              <Icon name="cloud upload" size="huge" color="blue" />
-              <Header as="h2" style={{ color: "#156fa6", marginTop: 10 }}>
-                Sube tu archivo
-              </Header>
-              <p className="dz-hint">
-                Arrastra o haz clic para seleccionar tu Excel
-              </p>
-            </Segment>
-            {data.length > 0 && (
-              <div className="dz-table-wrapper">
-                <h5>
-                  Vista previa ({data.length} fila{data.length !== 1 && "s"})
-                </h5>
-                <div className="dz-table-scroll">
-                  <Table celled striped compact selectable>
-                    <Table.Header>
-                      <Table.Row>
-                        {(displayColumns.length
-                          ? displayColumns
-                          : Object.keys(data[0])
-                        ).map((k) => (
-                          <Table.HeaderCell key={k}>{k}</Table.HeaderCell>
-                        ))}
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {data.map((row, i) => (
-                        <Table.Row key={i}>
-                          {(displayColumns.length
-                            ? displayColumns
-                            : Object.keys(row)
-                          ).map((k, j) => (
-                            <Table.Cell key={j}>{row[k]}</Table.Cell>
-                          ))}
-                        </Table.Row>
-                      ))}
-                    </Table.Body>
-                  </Table>
-                </div>
-                <div className="dz-actions">
-                  <Button
-                    primary
-                    icon
-                    labelPosition="left"
-                    disabled={rowErrors.length > 0}
-                    onClick={sendToBackend}
-                  >
-                    <Icon name="save" /> Guardar
-                  </Button>
-                  <Button
-                    color="teal"
-                    basic
-                    icon
-                    labelPosition="left"
-                    onClick={() =>
-                      isVenepacBase
-                        ? generarPlantillaVenepac()
-                        : generarPlantillaDfsk()
-                    }
-                  >
-                    <Icon name="download" /> Plantilla
-                  </Button>
-                  <Button
-                    basic
-                    color="blue"
-                    icon
-                    labelPosition="left"
-                    onClick={() => {
-                      setData([]);
-                      setRowErrors([]);
-                      setFeedback(null);
-                    }}
-                  >
-                    <Icon name="trash" /> Limpiar
-                  </Button>
-                </div>
               </div>
-            )}
-            {feedback && (
-              <Message
-                className="dz-feedback"
-                onDismiss={() => setFeedback(null)}
-                info
-              >
-                <Message.Header>Resultado inserción</Message.Header>
-                <p>{feedback}</p>
-                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                  <Button
-                    size="tiny"
-                    basic
-                    color="blue"
-                    onClick={() => {
-                      setData([]);
-                      setRowErrors([]);
-                    }}
-                  >
-                    Limpiar tabla
-                  </Button>
-                  <Button
-                    size="tiny"
-                    basic
-                    color="green"
-                    onClick={() => setFeedback(null)}
-                  >
-                    Cerrar
-                  </Button>
-                </div>
-              </Message>
-            )}
-          </div>
+            </div>
+          </aside>
+
+          <main className="dz-main-content">
+            <Menu pointing secondary className="dz-tabs-menu" size="small">
+              <Menu.Item name="Importación Masiva" active={activeView === "carga"} onClick={() => setActiveView("carga")} />
+              <Menu.Item name="Control de Series" active={activeView === "series"} onClick={() => setActiveView("series")} />
+            </Menu>
+            <div className="dz-panel" style={{ marginTop: '0.8rem', minHeight: '520px' }}>
+              {activeView === "carga" ? (
+                <>
+                  <div {...getRootProps()} className={`dz-dropzone ${data.length ? 'dz-dropzone-compact' : ''}`} style={{ padding: data.length ? '1rem' : '2.5rem' }}>
+                    <input {...getInputProps()} />
+                    <Icon name="cloud upload" size={data.length ? "large" : "huge"} color={data.length ? "grey" : "blue"} />
+                    <Header as={data.length ? "h5" : "h4"} style={{ margin: '5px 0 0' }}>{uploadedFileName || "Subir Excel"}</Header>
+                  </div>
+                  {data.length > 0 && (
+                    <div className="dz-animate-fade" style={{ marginTop: '1rem' }}>
+                      <div className="dz-table-wrapper">
+                        <div className="dz-table-header">
+                          <Header as="h6" style={{ margin: 0 }}>Vista Previa</Header>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                             <Button size="tiny" basic icon="trash" onClick={() => { setData([]); setUploadedFileName(""); }} />
+                             <Button primary size="tiny" onClick={sendToBackend} disabled={rowErrors.length > 0 || !conexionActiva}>Iniciar Carga</Button>
+                          </div>
+                        </div>
+                        <div className="dz-table-scroll">
+                          <Table celled striped compact selectable className="dz-preview-table">
+                            <Table.Header><Table.Row>{displayColumns.map(k => <Table.HeaderCell key={k}>{k}</Table.HeaderCell>)}</Table.Row></Table.Header>
+                            <Table.Body>
+                              {data.map((row, i) => (
+                                <Table.Row key={i}>
+                                  {displayColumns.map(k => (
+                                    <Table.Cell key={k} style={{ background: k === 'STATUS_FICHA' && row[k] !== 'OK' ? '#fff4e6' : '' }}>{row[k]}</Table.Cell>
+                                  ))}
+                                </Table.Row>
+                              ))}
+                            </Table.Body>
+                          </Table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {feedback && <div style={{ marginTop: '1rem' }}>{feedback}</div>}
+                </>
+              ) : <SeriesControl selectedDatabase={selectedDatabase} canQuery={conexionActiva === selectedDatabase} />}
+            </div>
+          </main>
         </div>
       </Container>
     </div>

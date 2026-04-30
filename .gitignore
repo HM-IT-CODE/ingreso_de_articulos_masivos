@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+db-config.json
+/dist
+/scratch
+*.log
+/public/logs

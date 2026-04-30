@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^13.5.0",
     "babel-loader": "^8.1.0",
     "electron-is-dev": "^1.2.0",
+    "exceljs": "^4.4.0",
     "mssql": "^11.0.1",
     "react": "^18.0.1",
     "react-dom": "^18.0.1",
@@ -28,8 +29,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "excel:modelo-dfsk": "node scripts/generate_dfsk_excel_model.js",
     "electron:serve": "concurrently -k \"cross-env BROWSER=none yarn start\" \"yarn electron:start\"",
-    "electron:build": "yarn build && electron-builder -c.extraMetadata.main=build/main.js",
+    "electron:build": "npm version patch --no-git-tag-version && node scripts/log-version.js && npm run build && electron-builder -c.extraMetadata.main=build/main.js",
     "electron:start": "wait-on tcp:3000 && electron ."
   },
   "eslintConfig": {
@@ -41,7 +43,7 @@
   "devDependencies": {
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
-    "electron": "^27.0.2",
+    "electron": "20.3.12",
     "electron-builder": "^24.6.4",
     "electron-reload": "^2.0.0-alpha.1",
     "node-gyp": "^10.0.1",
@@ -64,6 +66,12 @@
     "files": [
       "build/**/*",
       "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "db-config.json",
+        "to": "db-config.json"
+      }
     ],
     "directories": {
       "buildResources": "assets"

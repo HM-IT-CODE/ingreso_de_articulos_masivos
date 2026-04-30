@@ -1,237 +1,420 @@
-/* Estilos mejorados para el componente de carga masiva */
-
+/* --- SISTEMA DE DISEÑO PREMIUM --- */
 :root {
-    --color-primary: #2185d0;
-    --color-primary-rgb: 33, 133, 208;
-    --color-bg: #f4f7fb;
-    --color-border: #d9e2ec;
-    --radius-sm: 6px;
-    --radius-md: 12px;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --gradient-blue: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+    --color-primary: #3b82f6;
+    --color-primary-dark: #1d4ed8;
+    --color-primary-rgb: 59, 130, 246;
+    --color-bg: #f8fafc;
+    --color-surface: #ffffff;
+    --color-text-main: #1e293b;
+    --color-text-muted: #64748b;
+    --color-border: #e2e8f0;
+    --color-border-hover: #cbd5e1;
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    --gradient-pro: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
+    --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
 }
 
 body,
 .app-root-bg {
     background: var(--color-bg) !important;
-    font-family:
-        "Segoe UI",
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Helvetica Neue",
-        Arial,
-        sans-serif;
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif !important;
+    color: var(--color-text-main);
     -webkit-font-smoothing: antialiased;
 }
 
+/* --- CONTENEDOR PRINCIPAL --- */
 .dz-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
     width: 100%;
-    max-width: 1700px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 0.5rem 0 2.5rem;
+    padding: 1rem 1.5rem 3rem;
 }
 
+/* --- PANELES PREMIUM --- */
 .dz-panel {
-    background: #fff;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    padding: 1.25rem 1.4rem 1.6rem;
-    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-soft);
     position: relative;
     overflow: hidden;
-    transition:
-        box-shadow 0.25s,
-        transform 0.25s;
-}
-.dz-panel:hover {
-    box-shadow: var(--shadow-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dz-panel:before {
+.dz-panel:hover {
+    box-shadow: var(--shadow-premium);
+    border-color: var(--color-border-hover);
+}
+
+.dz-panel::after {
     content: "";
     position: absolute;
-    inset: 0;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle at top right, rgba(var(--color-primary-rgb), 0.03), transparent 70%);
     pointer-events: none;
-    background: radial-gradient(circle at 85% 10%, rgba(var(--color-primary-rgb), 0.07), transparent 60%);
 }
 
+/* --- CABECERAS --- */
 .dz-header-inline {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.dz-header-inline h4 {
+    margin: 0 !important;
+    font-weight: 700 !important;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem !important;
+}
+
+/* --- SELECTS Y DROPDOWNS --- */
+.ui.selection.dropdown {
+    border-radius: var(--radius-sm) !important;
+    border: 1px solid var(--color-border) !important;
+    transition: all 0.2s !important;
+    background: #fff !important;
+}
+
+.ui.selection.dropdown:hover {
+    border-color: var(--color-primary) !important;
+}
+
+/* --- TABS --- */
+.dz-tabs-menu {
+    background: transparent !important;
+    border-bottom: 0 !important;
     gap: 0.5rem;
 }
-.dz-header-inline h4 {
-    margin: 0;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+
+.dz-tabs-menu .item {
+    border-radius: 99px !important;
+    padding: 0.6rem 1.5rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    border: 1px solid var(--color-border) !important;
+    margin: 0 !important;
 }
 
-.dz-select-db .ui.selection.dropdown {
-    border-radius: var(--radius-sm);
+.dz-tabs-menu .item.active {
+    background: var(--color-text-main) !important;
+    color: #fff !important;
+    border-color: var(--color-text-main) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* --- DROPZONE MODERNA --- */
 .dz-dropzone {
-    border: 2px dashed var(--color-primary) !important;
-    background: #ffffff;
-    border-radius: 18px !important;
+    border: 2px dashed var(--color-border) !important;
+    background: var(--gradient-surface);
+    border-radius: var(--radius-md) !important;
+    padding: 3rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition:
-        background 0.25s,
-        border-color 0.25s;
-    position: relative;
-    min-height: 240px;
-    width: 100%;
+    transition: all 0.3s ease;
+    min-height: 200px;
 }
+
 .dz-dropzone:hover {
+    border-color: var(--color-primary) !important;
+    background: rgba(var(--color-primary-rgb), 0.02);
+    transform: translateY(-2px);
+}
+
+.dz-dropzone-active {
+    border-color: var(--color-primary) !important;
     background: rgba(var(--color-primary-rgb), 0.05);
 }
 
 .dz-hint {
-    color: #5a6b7b;
-    font-size: 0.95rem;
-    margin-top: 0.35rem;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
 }
 
-.dz-badges {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    margin-top: 1rem;
-}
-.dz-badge {
-    background: rgba(var(--color-primary-rgb), 0.08);
-    border: 1px solid rgba(var(--color-primary-rgb), 0.15);
-    color: #175a86;
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.4rem 0.65rem;
-    border-radius: 40px;
-    width: max-content;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    letter-spacing: 0.5px;
+/* --- CARDS DE ESTADO --- */
+.dz-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
 
-.dz-errors-list {
-    list-style: none;
-    padding-left: 0;
-    margin: 0.5rem 0 0;
-    max-height: 180px;
-    overflow: auto;
-    font-size: 0.75rem;
+.dz-status-card {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    transition: all 0.2s;
 }
-.dz-errors-list li {
+
+.dz-status-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.dz-status-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin-bottom: 0.25rem;
 }
 
-.dz-table-wrapper {
-    margin-top: 0.5rem;
-    position: relative;
-    background: #fff;
-    padding: 1.1rem 1.1rem 1.25rem;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border);
-    width: 100%;
+.dz-status-card strong {
+    font-size: 1.1rem;
+    color: var(--color-text-main);
+    font-weight: 800;
 }
 
-.dz-table-wrapper h5 {
-    margin: 0 0 0.9rem;
-    font-weight: 600;
-    color: #1a4367;
-    letter-spacing: 0.5px;
+/* --- TABLA PRO --- */
+.dz-table-wrapper {
+    background: #fff;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+}
+
+.dz-table-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    background: #fcfdfe;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .dz-table-scroll {
-    max-height: 60vh;
+    max-height: 550px;
     overflow: auto;
-    border-radius: var(--radius-sm);
 }
 
-.dz-table-scroll table {
-    font-size: 0.8rem;
-}
-.dz-table-scroll thead th {
-    position: sticky;
-    top: 0;
-    background: #f1f6fa;
-    z-index: 2;
+.dz-preview-table {
+    margin: 0 !important;
+    border: 0 !important;
+    font-size: 0.85rem !important;
 }
 
-.dz-actions {
-    margin-top: 1.2rem;
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-}
-.dz-actions .ui.button.primary {
-    background: var(--gradient-blue);
-}
-.dz-actions .ui.button.primary:hover {
-    filter: brightness(0.95);
-}
-.dz-actions .ui.button.basic {
-    border: 1px solid var(--color-primary);
+.dz-preview-table thead th {
+    background: #f8fafc !important;
+    color: var(--color-text-muted) !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    padding: 1rem !important;
+    letter-spacing: 0.025em !important;
 }
 
-.dz-feedback {
-    max-width: 520px;
-    margin: 1.25rem auto 0;
+.dz-preview-table tbody td {
+    padding: 0.85rem 1rem !important;
+    color: var(--color-text-main);
+    border-top: 1px solid #f1f5f9 !important;
+}
+
+/* Pildoras de estado */
+.dz-status-pill {
+    padding: 0.35rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.dz-status-pill-ok {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.dz-status-pill-warn {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.dz-status-pill-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* --- BOTONES --- */
+.ui.button {
     border-radius: var(--radius-sm) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    padding: 0.8rem 1.5rem !important;
+}
+
+.ui.button.primary {
+    background: var(--color-text-main) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ui.button.primary:hover {
+    background: #000 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* --- INSTRUCTIVO --- */
+.dz-instructivo-box {
+    background: #f1f5f9;
+    border-radius: var(--radius-sm);
+    padding: 1.25rem;
+}
+
+.dz-instructivo-box h5 {
+    color: var(--color-text-main);
+    margin-bottom: 0.75rem;
+    font-weight: 700;
 }
 
 .dz-instructivo-list {
-    padding-left: 1.1rem;
-    font-size: 0.9rem;
-    line-height: 1.35rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
+
 .dz-instructivo-list li {
-    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
 }
 
-.dz-chip-ok {
-    background: #e6f9ed;
-    color: #287d3c;
-    border: 1px solid #b6e2c3;
-}
-.dz-chip-warn {
-    background: #fff6e6;
-    color: #985f00;
-    border: 1px solid #f5d89a;
-}
-.dz-chip-error {
-    background: #fdecea;
-    color: #b7302b;
-    border: 1px solid #f4b4af;
+.dz-instructivo-list li::before {
+    content: "→";
+    color: var(--color-primary);
+    font-weight: bold;
 }
 
-/* Scrollbar sutil */
-.dz-table-scroll::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-.dz-table-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-.dz-table-scroll::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: 20px;
-}
-.dz-table-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.28);
+/* --- RESPONSIVIDAD --- */
+@media (max-width: 1024px) {
+    .dz-status-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 
-/* Mensajes compactos */
-.ui.message {
+@media (max-width: 640px) {
+    .dz-status-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dz-header-inline {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dz-animate-fade {
+    animation: fadeIn 0.4s ease forwards;
+}
+
+/* --- NUEVAS CLASES DE LAYOUT --- */
+.dz-header-pro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: #fff;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .dz-header-pro {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .dz-header-pro-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+.dz-header-pro-left {
+    display: flex;
+    align-items: center;
+}
+
+.dz-header-pro-right {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.dz-sidebar {
+    position: sticky;
+    top: 1rem;
+}
+
+.pro-test-btn {
+    background: var(--color-text-main) !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
     border-radius: var(--radius-sm) !important;
+    transition: all 0.2s !important;
+}
+
+.pro-test-btn:hover {
+    background: #000 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Ajustes de compactación */
+.dz-panel {
+    padding: 1.25rem !important;
+}
+
+.dz-status-grid {
+    gap: 0.75rem !important;
+}
+
+.dz-status-card {
+    padding: 0.75rem !important;
 }

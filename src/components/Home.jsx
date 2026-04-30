@@ -1,52 +1,61 @@
-import { Menu, Container, Icon } from "semantic-ui-react";
+import { Menu, Container, Icon, Image } from "semantic-ui-react";
 import { Link } from "react-router-dom";
 import Meruq from "../assets/MeruQ-Group.png";
+
 export const Home = () => {
   return (
-    <Container fluid style={{ padding: 0 }}>
+    <div style={{ background: "var(--color-bg)" }}>
+      {/* --- NAVBAR PREMIUM (No Fixed para evitar solapamiento) --- */}
       <Menu
-        fixed="top"
         borderless
         style={{
-          backgroundColor: "#fff",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-          minHeight: 64,
+          background: "#fff",
+          border: "none",
+          borderBottom: "1px solid var(--color-border)",
+          boxShadow: "var(--shadow-soft)",
+          height: "64px",
+          margin: 0,
           display: "flex",
           alignItems: "center",
+          padding: "0 1rem"
         }}
       >
-        <Menu.Item
-          as={Link}
-          to="/dropzone"
-          style={{ display: "flex", alignItems: "center" }}
-        >
-          <Icon
-            size="large"
-            color="teal"
-            name="inbox"
-            style={{ marginRight: 10 }}
-          />
-          <span
-            style={{
-              color: "#2185d0",
-              fontSize: "20px",
-              fontWeight: 600,
-              letterSpacing: 1,
-            }}
-          >
-            Ingreso de artículos masivo
-          </span>
-        </Menu.Item>
-        <Menu.Menu position="right">
-          <Menu.Item>
-            <img
-              src={Meruq}
-              alt="logo"
-              style={{ height: 40, objectFit: "contain" }}
-            />
-          </Menu.Item>
-        </Menu.Menu>
+        <Container fluid style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Menu.Item
+              as={Link}
+              to="/"
+              style={{ padding: "0 10px", display: "flex", alignItems: "center", gap: "12px" }}
+            >
+              <div style={{ 
+                background: "var(--gradient-pro)", 
+                padding: "8px", 
+                borderRadius: "10px", 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center",
+                boxShadow: "0 4px 10px rgba(99, 102, 241, 0.2)"
+              }}>
+                <Icon name="archive" size="large" inverted style={{ margin: 0 }} />
+              </div>
+              <span style={{ 
+                color: "var(--color-text-main)", 
+                fontSize: "1.15rem", 
+                fontWeight: 800,
+                letterSpacing: "-0.02em"
+              }}>
+                Ingreso de Artículos Masivo
+              </span>
+            </Menu.Item>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center" }}>
+             <Image src={Meruq} style={{ height: "32px", opacity: 0.9 }} />
+          </div>
+        </Container>
       </Menu>
-    </Container>
+      
+      {/* El contenido se renderizará debajo automáticamente por el Router.jsx */}
+    </div>
   );
 };

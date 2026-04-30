@@ -37,3 +37,144 @@
 [2025-10-03T13:29:31.922Z] VENEPAC_SIMPLE Commit OK
 [2025-10-03T13:29:31.922Z] Cerrando conexión SQL
 [2025-10-03T13:29:31.922Z] Cerrando conexión SQL
+[2026-01-27T13:20:34.255Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T13:20:34.395Z] Modelos cargados (claves)=19
+[2026-01-27T13:20:34.506Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T13:20:34.552Z] Procesando articulo=88004
+[2026-01-27T13:20:34.552Z] INSERT ARTICULOS extendido: 88004
+[2026-01-27T13:20:34.552Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T13:20:34.554Z] Error articulo=88004 msg=grupoFinal is not defined
+[2026-01-27T13:20:34.556Z] Commit OK
+[2026-01-27T13:20:34.556Z] Cerrando conexión SQL
+[2026-01-27T13:22:28.446Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T13:22:28.479Z] Modelos cargados (claves)=19
+[2026-01-27T13:22:28.565Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T13:22:28.605Z] Procesando articulo=88004
+[2026-01-27T13:22:28.605Z] INSERT ARTICULOS extendido: 88004
+[2026-01-27T13:22:28.605Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T13:22:28.607Z] Error articulo=88004 msg=tieneFechacif is not defined
+[2026-01-27T13:22:28.608Z] Commit OK
+[2026-01-27T13:22:28.608Z] Cerrando conexión SQL
+[2026-01-27T13:28:38.533Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T13:28:38.569Z] Modelos cargados (claves)=19
+[2026-01-27T13:28:38.611Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T13:28:38.658Z] Procesando articulo=88004
+[2026-01-27T13:28:38.658Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T13:28:38.658Z] INSERT ARTICULOS extendido: 88004
+[2026-01-27T13:28:38.694Z] Error articulo=88004 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (88004).
+[2026-01-27T13:28:38.697Z] Commit OK
+[2026-01-27T13:28:38.697Z] Cerrando conexión SQL
+[2026-01-27T13:35:18.340Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T13:35:18.371Z] Modelos cargados (claves)=19
+[2026-01-27T13:35:18.414Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T13:35:18.468Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T13:35:18.468Z] INSERT ARTICULOS extendido: 99950
+[2026-01-27T13:35:18.468Z] Procesando articulo=99950
+[2026-01-27T13:35:18.491Z] Ficha APLICA base=prueba_dfsk articulo=99950 aplica='SIN MODELO, C31, C32, GLORY 330'
+[2026-01-27T13:35:18.491Z] IDMODELO resolve articulo=99950 valor=6 tipo=number
+[2026-01-27T13:35:18.503Z] Articulo 99950 sin ubicacion -> Asignando S/U por regla 8000/9000
+[2026-01-27T13:35:18.849Z] Error insertando ubicacion articulo=99950: Invalid column name 'CANT'.
+[2026-01-27T13:35:18.849Z] Insertado articulo=99950
+[2026-01-27T13:35:18.852Z] Cerrando conexión SQL
+[2026-01-27T13:35:18.852Z] Commit OK
+[2026-01-27T14:02:55.221Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T14:02:55.266Z] Modelos cargados (claves)=22
+[2026-01-27T14:02:55.341Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T14:02:55.395Z] INSERT ARTICULOS extendido: 99951
+[2026-01-27T14:02:55.395Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T14:02:55.395Z] Procesando articulo=99951
+[2026-01-27T14:02:55.447Z] Error articulo=99951 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (99951).
+[2026-01-27T14:02:55.450Z] Cerrando conexión SQL
+[2026-01-27T14:02:55.450Z] Commit OK
+[2026-01-27T14:04:29.601Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T14:04:29.641Z] Modelos cargados (claves)=22
+[2026-01-27T14:04:29.733Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T14:04:29.793Z] Procesando articulo=99960
+[2026-01-27T14:04:29.793Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T14:04:29.793Z] INSERT ARTICULOS extendido: 99960
+[2026-01-27T14:04:29.808Z] Error articulo=99960 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (99960).
+[2026-01-27T14:04:29.811Z] Commit OK
+[2026-01-27T14:04:29.811Z] Cerrando conexión SQL
+[2026-01-27T14:12:45.625Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T14:12:45.663Z] Modelos cargados (claves)=22
+[2026-01-27T14:12:45.740Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T14:12:45.808Z] Procesando articulo=87002
+[2026-01-27T14:12:45.808Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T14:12:45.809Z] INSERT ARTICULOS extendido: 87002
+[2026-01-27T14:12:45.831Z] Ficha APLICA base=prueba_dfsk articulo=87002 aplica='SIN MODELO, C31, C32, GLORY 330'
+[2026-01-27T14:12:45.831Z] IDMODELO resolve articulo=87002 valor=6 tipo=number
+[2026-01-27T14:12:45.844Z] Articulo 87002 sin ubicacion -> Asignando S/U por regla 8000/9000
+[2026-01-27T14:12:45.856Z] Insertado articulo=87002
+[2026-01-27T14:12:45.856Z] Error insertando ubicacion articulo=87002: Invalid column name 'CANT'.
+[2026-01-27T14:12:45.858Z] Commit OK
+[2026-01-27T14:12:45.858Z] Cerrando conexión SQL
+[2026-01-27T14:19:31.106Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T14:19:31.141Z] Modelos cargados (claves)=22
+[2026-01-27T14:19:31.218Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T14:19:31.272Z] Procesando articulo=8002
+[2026-01-27T14:19:31.272Z] INSERT ARTICULOS extendido: 8002
+[2026-01-27T14:19:31.272Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T14:19:31.293Z] IDMODELO resolve articulo=8002 valor=6 tipo=number
+[2026-01-27T14:19:31.293Z] Ficha APLICA base=prueba_dfsk articulo=8002 aplica='SIN MODELO, C31, C32, GLORY 330'
+[2026-01-27T14:19:31.316Z] Error insertando ubicacion articulo=8002: Invalid column name 'CANT'.
+[2026-01-27T14:19:31.316Z] Insertado articulo=8002
+[2026-01-27T14:19:31.318Z] Cerrando conexión SQL
+[2026-01-27T14:19:31.318Z] Commit OK
+[2026-01-27T14:26:38.260Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T14:26:38.307Z] Modelos cargados (claves)=22
+[2026-01-27T14:26:38.372Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T14:26:38.431Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T14:26:38.431Z] Procesando articulo=89449
+[2026-01-27T14:26:38.432Z] INSERT ARTICULOS extendido: 89449
+[2026-01-27T14:26:38.462Z] Error articulo=89449 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (89449).
+[2026-01-27T14:26:38.524Z] Commit OK
+[2026-01-27T14:26:38.524Z] Cerrando conexión SQL
+[2026-01-27T14:29:04.241Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T14:29:04.270Z] Modelos cargados (claves)=22
+[2026-01-27T14:29:04.335Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T14:29:04.384Z] INSERT ARTICULOS extendido: 99674
+[2026-01-27T14:29:04.384Z] Procesando articulo=99674
+[2026-01-27T14:29:04.384Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T14:29:04.408Z] Ficha APLICA base=prueba_dfsk articulo=99674 aplica='SIN MODELO, C31, C32, GLORY 330'
+[2026-01-27T14:29:04.408Z] IDMODELO resolve articulo=99674 valor=6 tipo=number
+[2026-01-27T14:29:04.421Z] Articulo 99674 sin ubicacion -> Asignando S/U por regla 8000/9000
+[2026-01-27T14:29:04.430Z] Ubicacion insertada en UBICACIONES ARTICULO=99674 UBI=S/U
+[2026-01-27T14:29:04.430Z] Insertado articulo=99674
+[2026-01-27T14:29:04.433Z] Commit OK
+[2026-01-27T14:29:04.433Z] Cerrando conexión SQL
+[2026-01-27T15:53:16.315Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T15:53:16.351Z] Modelos cargados (claves)=22
+[2026-01-27T15:53:16.423Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T15:53:16.482Z] Procesando articulo=99674
+[2026-01-27T15:53:16.482Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T15:53:16.482Z] INSERT ARTICULOS extendido: 99674
+[2026-01-27T15:53:16.509Z] Error articulo=99674 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (99674).
+[2026-01-27T15:53:16.516Z] Cerrando conexión SQL
+[2026-01-27T15:53:16.516Z] Commit OK
+[2026-01-27T15:58:28.296Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T15:58:28.325Z] Modelos cargados (claves)=22
+[2026-01-27T15:58:28.385Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T15:58:28.434Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T15:58:28.435Z] INSERT ARTICULOS extendido: 99674
+[2026-01-27T15:58:28.434Z] Procesando articulo=99674
+[2026-01-27T15:58:28.452Z] Error articulo=99674 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (99674).
+[2026-01-27T15:58:28.456Z] Commit OK
+[2026-01-27T15:58:28.457Z] Cerrando conexión SQL
+[2026-01-27T15:59:13.258Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T15:59:13.296Z] Modelos cargados (claves)=22
+[2026-01-27T15:59:13.351Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T15:59:13.404Z] Procesando articulo=99674
+[2026-01-27T15:59:13.404Z] INSERT ARTICULOS extendido: 99674
+[2026-01-27T15:59:13.404Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T15:59:13.420Z] Error articulo=99674 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (99674).
+[2026-01-27T15:59:13.424Z] Commit OK
+[2026-01-27T15:59:13.424Z] Cerrando conexión SQL
+[2026-01-27T16:00:50.633Z] Solicitud insercion recibida base=prueba_dfsk
+[2026-01-27T16:00:50.690Z] Modelos cargados (claves)=22
+[2026-01-27T16:00:50.724Z] Meta columnas ARTICULOS: ARTICULO=varchar(TEX),DESCRIPCION=varchar(TEX),MARCA=numeric(NUM),UNIDAD=varchar(TEX),CATEGORIA=varchar(TEX),STOCKMINIMO=numeric(NUM),REPOSICION=numeric(NUM),IVA=numeric(NUM),FECHACIF=datetime2(TEX),CIF=numeric(NUM),TIPO=varchar(TEX),GARANTIA=numeric(NUM),DESCUENTO=numeric(NUM),USUARIO=varchar(TEX),FECHA=datetime2(TEX),FECHAACTUAL=datetime2(TEX),EMPAQUE=numeric(NUM),EAN=varchar(TEX),GRUPO=numeric(NUM),CBM=numeric(NUM),VENTA=numeric(NUM),CIFM=numeric(NUM),MODELO=varchar(TEX),PUNTOS=numeric(NUM),MODIFICACION=datetime(TEX),NROUNICO=int(NUM),UBICACION=varchar(TEX),COLOR=varchar(TEX),EXENTO=varchar(TEX),USO=varchar(TEX),ANO=varchar(TEX),TIPOC=varchar(TEX),TRANSMISION=varchar(TEX),PUERTAS=int(NUM),MODELOI=varchar(TEX),COLOR1=varchar(TEX),COLOR2=varchar(TEX),COLOR1T=varchar(TEX),COLOR2T=varchar(TEX),RIN=varchar(TEX),EJESI=varchar(TEX),PUESTOS=varchar(TEX),PESO=varchar(TEX),CAPCARGA=varchar(TEX),CLASEI=varchar(TEX),CLASET=varchar(TEX),TIPOI=varchar(TEX),TIPOT=varchar(TEX),USOI=varchar(TEX),USOT=varchar(TEX),SERIE=varchar(TEX),MARCAI=varchar(TEX),SERVICIO=varchar(TEX),COMBUSTIBLE=varchar(TEX),ANOF=varchar(TEX),ANOM=varchar(TEX),ACTIVO=varchar(TEX),GRUPOA=varchar(TEX)
+[2026-01-27T16:00:50.756Z] Procesando articulo=99674
+[2026-01-27T16:00:50.756Z] INSERT ARTICULOS extendido: 99674
+[2026-01-27T16:00:50.756Z] Dato.USUARIO='ADMN' (tipo=string)
+[2026-01-27T16:00:50.768Z] Error articulo=99674 msg=Violation of PRIMARY KEY constraint 'ARTICULOS_PK'. Cannot insert duplicate key in object 'dbo.ARTICULOS'. The duplicate key value is (99674).
+[2026-01-27T16:00:50.771Z] Commit OK
+[2026-01-27T16:00:50.771Z] Cerrando conexión SQL

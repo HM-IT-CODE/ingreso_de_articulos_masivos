@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld("electron", {
         "test-conexion",
         "obtener-categorias",
         "obtener-marcas",
+        "obtener-resumen-series",
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.send(channel, data);
@@ -21,6 +22,7 @@ contextBridge.exposeInMainWorld("electron", {
         "test-conexion-respuesta",
         "obtener-categorias-respuesta",
         "obtener-marcas-respuesta",
+        "obtener-resumen-series-respuesta",
       ];
       if (validChannels.includes(channel)) {
         ipcRenderer.once(channel, (event, ...args) => func(...args));
@@ -29,25 +31,4 @@ contextBridge.exposeInMainWorld("electron", {
   },
 });
 
-//
-/* const { contextBridge, ipcRenderer } = require('electron');
-
-contextBridge.exposeInMainWorld(
-  'electron', {
-    ipcRenderer: {
-      send: (channel, data) => {
-        const validChannels = ['hola-mundo', 'test-comunicacion'];
-        if (validChannels.includes(channel)) {
-          ipcRenderer.send(channel, data);
-        }
-      },
-      once: (channel, func) => {
-        const validChannels = ['hola-mundo-respuesta', 'test-comunicacion-respuesta'];
-        if (validChannels.includes(channel)) {
-          ipcRenderer.once(channel, (event, ...args) => func(...args));
-        }
-      }
-    }
-  }
-);
- */
+// End of preload
