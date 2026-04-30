@@ -418,3 +418,38 @@ body,
 .dz-status-card {
     padding: 0.75rem !important;
 }
+
+/* --- ESTILOS CONTROL DE SERIES --- */
+.dz-header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 1rem;
+}
+
+.dz-table-header {
+    background: #f8fafc;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.dz-table-scroll {
+    overflow-y: auto;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+.dz-table-wrapper {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+}
+
+:root {
+    --gradient-surface: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+}
